@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["DemoPoseBackendsModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.demoposebackends.DemoPoseBackendsModule"]
+  }
+}

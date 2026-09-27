@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="688" viewBox="0 0 1400 688" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <rect width="1400" height="688" fill="#0B0D0C"/>
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">PERFORMANCE</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">Time per pose on real phones</text>
+  <text x="30" y="106" fill="#8C968F" font-size="15">Release builds in auto mode, lower is better. The overlay held 60 fps in every run, however slow the model was.</text>
+  <text x="30" y="170" fill="#F4F7F2" font-size="15" font-weight="800">iPhone 11 Pro</text>
+  <text x="344" y="211" text-anchor="end" fill="#8C968F" font-size="14">MediaPipe Lite, iOS default</text>
+  <rect x="360" y="194" width="48.879999999999995" height="26" rx="8" fill="#C6FF3D" fill-opacity="0.9"/>
+  <text x="418.88" y="213" fill="#F4F7F2" font-size="15" font-weight="800">26 ms</text>
+  <text x="344" y="257" text-anchor="end" fill="#8C968F" font-size="14">Apple Vision, example backend</text>
+  <rect x="360" y="240" width="47" height="26" rx="8" fill="#3DD6FF" fill-opacity="0.9"/>
+  <text x="417" y="259" fill="#F4F7F2" font-size="15" font-weight="800">25 ms</text>
+  <text x="30" y="318" fill="#F4F7F2" font-size="15" font-weight="800">OPPO CPH2217, low-end Android</text>
+  <text x="344" y="359" text-anchor="end" fill="#8C968F" font-size="14">ML Kit, Android default</text>
+  <rect x="360" y="342" width="112.80000000000001" height="26" rx="8" fill="#C6FF3D" fill-opacity="0.9"/>
+  <text x="482.8" y="361" fill="#F4F7F2" font-size="15" font-weight="800">60 ms</text>
+  <text x="344" y="405" text-anchor="end" fill="#8C968F" font-size="14">MediaPipe Lite</text>
+  <rect x="360" y="388" width="193.64" height="26" rx="8" fill="#3DD6FF" fill-opacity="0.9"/>
+  <text x="563.64" y="407" fill="#F4F7F2" font-size="15" font-weight="800">103 ms</text>
+  <text x="344" y="451" text-anchor="end" fill="#8C968F" font-size="14">MediaPipe Full</text>
+  <rect x="360" y="434" width="248.15999999999997" height="26" rx="8" fill="#3DD6FF" fill-opacity="0.9"/>
+  <text x="618.16" y="453" fill="#F4F7F2" font-size="15" font-weight="800">132 ms</text>
+  <text x="344" y="497" text-anchor="end" fill="#8C968F" font-size="14">MediaPipe Heavy, file</text>
+  <rect x="360" y="480" width="919.3200000000002" height="26" rx="8" fill="#FF6B4A" fill-opacity="0.9"/>
+  <text x="1289.3200000000002" y="499" fill="#F4F7F2" font-size="15" font-weight="800">489 ms</text>
+  <line x1="422.04" x2="422.04" y1="146" y2="538" stroke="#F4F7F2" stroke-opacity="0.5" stroke-dasharray="4 5"/>
+  <text x="430.04" y="158" fill="#8C968F" font-size="12">one camera frame at 30 fps</text>
+  <text x="360" y="562" text-anchor="middle" fill="#4A524D" font-size="12">0 ms</text>
+  <text x="548" y="562" text-anchor="middle" fill="#4A524D" font-size="12">100 ms</text>
+  <text x="736" y="562" text-anchor="middle" fill="#4A524D" font-size="12">200 ms</text>
+  <text x="924" y="562" text-anchor="middle" fill="#4A524D" font-size="12">300 ms</text>
+  <text x="1112" y="562" text-anchor="middle" fill="#4A524D" font-size="12">400 ms</text>
+  <text x="1300" y="562" text-anchor="middle" fill="#4A524D" font-size="12">500 ms</text>
+  <rect x="30" y="596" width="1340" height="68" rx="16" fill="#FFC23D" fill-opacity="0.12" stroke="#FFC23D" stroke-width="1.5"/>
+  <circle cx="66" cy="630" r="15" fill="#FFC23D"/>
+  <text x="66" y="636" text-anchor="middle" fill="#0B0D0C" font-size="18" font-weight="900">!</text>
+  <text x="96" y="625" fill="#FFC23D" font-size="12" font-weight="800" letter-spacing="2">HEADS UP</text>
+  <text x="96" y="647" fill="#F4F7F2" font-size="16" font-weight="600">Both phones were charging and warm during these runs, so cool phones should do better. Accuracy between models hasn&#8217;t been compared yet.</text>
+</svg>

@@ -1,0 +1,128 @@
+{
+  "pushup": {
+    "type": "exercise",
+    "id": "pushup",
+    "metric": {
+      "kind": "angle",
+      "joints": [
+        "leftShoulder",
+        "leftElbow",
+        "leftWrist"
+      ],
+      "mirror": true
+    },
+    "top": 150,
+    "bottom": 100,
+    "hysteresis": 10,
+    "minRepMs": 500,
+    "maxRepMs": 8000,
+    "lossGraceMs": 400,
+    "minConfidence": 0.5,
+    "requires": [
+      {
+        "kind": "inclination",
+        "joints": [
+          "leftShoulder",
+          "leftAnkle"
+        ],
+        "max": 40,
+        "mirror": true
+      }
+    ]
+  },
+  "squat": {
+    "type": "exercise",
+    "id": "squat",
+    "metric": {
+      "kind": "angle",
+      "joints": [
+        "leftHip",
+        "leftKnee",
+        "leftAnkle"
+      ],
+      "mirror": true
+    },
+    "top": 160,
+    "bottom": 100,
+    "hysteresis": 10,
+    "minRepMs": 400,
+    "maxRepMs": 8000,
+    "lossGraceMs": 400,
+    "minConfidence": 0.5,
+    "requires": [
+      {
+        "kind": "inclination",
+        "joints": [
+          "leftShoulder",
+          "leftHip"
+        ],
+        "min": 35,
+        "mirror": true
+      }
+    ]
+  },
+  "punch": {
+    "type": "exercise",
+    "id": "punch",
+    "metric": {
+      "kind": "angle",
+      "joints": [
+        "leftShoulder",
+        "leftElbow",
+        "leftWrist"
+      ],
+      "mirror": true
+    },
+    "mode": "peak",
+    "top": 110,
+    "bottom": 80,
+    "hysteresis": 10,
+    "minRepMs": 70,
+    "maxRepMs": 8000,
+    "lossGraceMs": 400,
+    "minConfidence": 0.2
+  },
+  "tpose": {
+    "type": "pose",
+    "id": "tpose",
+    "holdMs": 500,
+    "exitGraceMs": 150,
+    "minConfidence": 0.5,
+    "conditions": [
+      {
+        "kind": "inclination",
+        "joints": [
+          "leftShoulder",
+          "leftWrist"
+        ],
+        "max": 20
+      },
+      {
+        "kind": "inclination",
+        "joints": [
+          "rightShoulder",
+          "rightWrist"
+        ],
+        "max": 20
+      },
+      {
+        "kind": "angle",
+        "joints": [
+          "leftShoulder",
+          "leftElbow",
+          "leftWrist"
+        ],
+        "min": 150
+      },
+      {
+        "kind": "angle",
+        "joints": [
+          "rightShoulder",
+          "rightElbow",
+          "rightWrist"
+        ],
+        "min": 150
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+appId: expo.modules.bodyvision.example
+name: Tracking recovers after the app is backgrounded
+tags:
+  - lifecycle
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-performance
+- tapOn:
+    id: demo-performance
+- extendedWaitUntil:
+    visible:
+      id: perf-body
+      text: "yes"
+    timeout: 10000
+- pressKey: home
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: perf-body
+      text: "yes"
+    timeout: 10000

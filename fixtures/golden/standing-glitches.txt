@@ -1,0 +1,2 @@
+0 bodyDetected 1
+0 exercisePhase squat top

@@ -1,0 +1,21 @@
+0 bodyDetected 1
+0 exercisePhase pushup top
+869 exercisePhase pushup descending
+1068 exercisePhase pushup bottom
+1665 exercisePhase pushup ascending
+1866 repCompleted pushup 1
+1866 exercisePhase pushup top
+2533 exercisePhase pushup descending
+2734 exercisePhase pushup bottom
+3303 exercisePhase pushup ascending
+3534 repCompleted pushup 2
+3534 exercisePhase pushup top
+4370 bodyLost 1
+4568 exercisePhase pushup ready
+5134 bodyDetected 2
+5134 exercisePhase pushup top
+6035 exercisePhase pushup descending
+6202 exercisePhase pushup bottom
+6834 exercisePhase pushup ascending
+7064 repCompleted pushup 3
+7064 exercisePhase pushup top

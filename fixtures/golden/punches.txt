@@ -1,0 +1,11 @@
+0 bodyDetected 1
+700 repCompleted punch 1 left
+1203 repCompleted punch 2 right
+1732 repCompleted punch 3 left
+2736 repCompleted punch 4 left
+2830 repCompleted punch 5 right
+2966 repCompleted punch 6 left
+3070 repCompleted punch 7 right
+3170 repCompleted punch 8 left
+3264 repCompleted punch 9 right
+3863 repCompleted punch 10 left

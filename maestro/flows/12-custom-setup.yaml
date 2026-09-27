@@ -1,0 +1,20 @@
+appId: expo.modules.bodyvision.example
+name: Custom setup steps (position, T-pose, measure, countdown) drive a headless UI to done
+tags:
+  - setup
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-customSetup
+- tapOn:
+    id: demo-customSetup
+- extendedWaitUntil:
+    visible:
+      id: custom-setup-text
+      text: "Calibrated"
+    timeout: 25000

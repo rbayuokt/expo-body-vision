@@ -1,0 +1,21 @@
+appId: expo.modules.bodyvision.example
+name: Native hit test registers two hits, the second pass inside the cooldown is ignored
+tags:
+  - smoke
+  - interaction
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-target
+- tapOn:
+    id: demo-target
+- extendedWaitUntil:
+    visible:
+      id: hit-count
+      text: "2"
+    timeout: 10000

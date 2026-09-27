@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "BodyVision",
+    "slug": "expo-body-vision-example",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "expo.modules.bodyvision.example",
+      "appleTeamId": "U2VRZF66Z8",
+      "infoPlist": {
+        "CADisableMinimumFrameDurationOnPhone": true
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "expo.modules.bodyvision.example"
+    },
+    "plugins": [
+      [
+        "@rbayuokt/expo-body-vision",
+        {
+          "cameraPermission": "The camera is used to demo live body tracking.",
+          "enableTestInput": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Pick a workout video to analyse."
+        }
+      ]
+    ]
+  }
+}

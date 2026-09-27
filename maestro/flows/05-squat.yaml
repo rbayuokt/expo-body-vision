@@ -1,0 +1,22 @@
+appId: expo.modules.bodyvision.example
+name: Squat counter counts three reps
+tags:
+  - exercise
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-exercise
+- tapOn:
+    id: demo-exercise
+- tapOn:
+    id: exercise-squat
+- extendedWaitUntil:
+    visible:
+      id: rep-count
+      text: "3"
+    timeout: 15000

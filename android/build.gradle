@@ -1,0 +1,37 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.bodyvision'
+version = '0.1.0'
+
+def cameraxVersion = '1.6.2'
+
+android {
+  namespace "expo.modules.bodyvision"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+    consumerProguardFiles "consumer-rules.pro"
+  }
+  lintOptions {
+    abortOnError false
+  }
+  sourceSets {
+    // One copy of the models, shared with the iOS pod's resource bundle.
+    main.assets.srcDirs += '../ios/Models'
+    // Core tests run on the JVM through core-tests/, not as Android unit tests.
+    test.java.srcDirs = []
+  }
+}
+
+dependencies {
+  implementation 'com.google.mediapipe:tasks-vision:1.0.0'
+  // Default Android backend. Bundled model, no Play services needed.
+  implementation 'com.google.mlkit:pose-detection:18.0.0-beta5'
+  implementation "androidx.camera:camera-core:${cameraxVersion}"
+  implementation "androidx.camera:camera-camera2:${cameraxVersion}"
+  implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"
+  implementation "androidx.camera:camera-view:${cameraxVersion}"
+}

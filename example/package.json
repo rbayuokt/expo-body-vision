@@ -1,0 +1,43 @@
+{
+  "name": "expo-body-vision-example",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@rbayuokt/expo-body-vision": "file:..",
+    "@shopify/react-native-skia": "2.4.18",
+    "demo-pose-backends": "file:./modules/demo-pose-backends",
+    "expo": "~55.0.31",
+    "expo-image-picker": "~55.0.24",
+    "expo-speech": "~55.0.18",
+    "expo-status-bar": "~55.0.6",
+    "react": "19.2.0",
+    "react-native": "0.83.10",
+    "react-native-reanimated": "4.2.1",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-worklets": "0.7.4"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~5.9.2"
+  },
+  "scripts": {
+    "start": "expo start",
+    "setup": "npm --prefix .. run prepare && npm install && sh scripts/fetch-models.sh",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean",
+    "android": "npm --prefix .. run prepare && expo run:android",
+    "ios": "npm --prefix .. run prepare && expo run:ios",
+    "android:release": "npm --prefix .. run prepare && expo run:android --device --variant release --no-bundler",
+    "ios:release": "npm --prefix .. run prepare && expo run:ios --device --configuration Release --no-bundler",
+    "models": "sh scripts/fetch-models.sh"
+  },
+  "private": true,
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": ".."
+    }
+  },
+  "allowScripts": {
+    "@shopify/react-native-skia": true
+  }
+}

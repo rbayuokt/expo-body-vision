@@ -1,0 +1,27 @@
+appId: expo.modules.bodyvision.example
+name: Native rendering and counting continue while JS is blocked
+tags:
+  - smoke
+  - renderer
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-stress
+- tapOn:
+    id: demo-stress
+- tapOn:
+    id: block-js
+# Reps happened natively during the block and arrive together afterwards.
+- extendedWaitUntil:
+    visible:
+      id: stress-reps
+      text: "3"
+    timeout: 15000
+- assertNotVisible:
+    id: stress-during
+    text: "-"

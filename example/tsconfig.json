@@ -1,0 +1,11 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@rbayuokt/expo-body-vision": ["../src/index"],
+      "@rbayuokt/expo-body-vision/setup": ["../src/setup/index"],
+      "@rbayuokt/expo-body-vision/*": ["../src/*"]
+    }
+  }
+}

@@ -1,0 +1,17 @@
+-2 bodyDetected 1
+-2 exercisePhase squat top
+669 exercisePhase squat descending
+765 exercisePhase squat bottom
+1101 exercisePhase squat ascending
+1232 repCompleted squat 1
+1232 exercisePhase squat top
+1701 exercisePhase squat descending
+1803 exercisePhase squat bottom
+2203 exercisePhase squat ascending
+2302 repCompleted squat 2
+2302 exercisePhase squat top
+2730 exercisePhase squat descending
+2832 exercisePhase squat bottom
+3198 exercisePhase squat ascending
+3298 repCompleted squat 3
+3298 exercisePhase squat top

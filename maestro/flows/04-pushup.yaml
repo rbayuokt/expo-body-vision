@@ -1,0 +1,24 @@
+appId: expo.modules.bodyvision.example
+name: Push-up counter counts two reps and rejects the partial one
+tags:
+  - smoke
+  - exercise
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-exercise
+- tapOn:
+    id: demo-exercise
+- extendedWaitUntil:
+    visible:
+      id: rep-count
+      text: "2"
+    timeout: 15000
+- assertVisible:
+    id: rep-rejected
+    text: "incomplete"

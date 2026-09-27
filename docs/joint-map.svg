@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <rect width="1500" height="900" fill="#0B0D0C"/>
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">JOINTS</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">33 joints, named from the person&#8217;s own side</text>
+  <text x="30" y="106" fill="#8C968F" font-size="15">The person faces you, so their left side is on your right.</text>
+  <circle cx="880" cy="212" r="58" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
+  <line x1="968" y1="300" x2="792" y2="300" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="936" y1="530" x2="824" y2="530" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="968" y1="300" x2="936" y2="530" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="792" y1="300" x2="824" y2="530" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="968" y1="300" x2="1030" y2="400" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="1030" y1="400" x2="1076" y2="492" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="792" y1="300" x2="730" y2="400" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="730" y1="400" x2="684" y2="492" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="936" y1="530" x2="946" y2="672" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="946" y1="672" x2="954" y2="806" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="824" y1="530" x2="814" y2="672" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="814" y1="672" x2="806" y2="806" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="1076" y1="492" x2="1088" y2="530" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="684" y1="492" x2="672" y2="530" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="954" y1="806" x2="990" y2="836" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="806" y1="806" x2="770" y2="836" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="954" y1="806" x2="944" y2="830" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <line x1="806" y1="806" x2="816" y2="830" stroke="rgba(244,247,242,0.55)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="880" cy="214" r="7" fill="#F4F7F2"/>
+  <circle cx="892" cy="200" r="4" fill="#C6FF3D"/>
+  <circle cx="902" cy="198" r="4" fill="#C6FF3D"/>
+  <circle cx="912" cy="200" r="4" fill="#C6FF3D"/>
+  <circle cx="868" cy="200" r="4" fill="#3DD6FF"/>
+  <circle cx="858" cy="198" r="4" fill="#3DD6FF"/>
+  <circle cx="848" cy="200" r="4" fill="#3DD6FF"/>
+  <circle cx="926" cy="212" r="4" fill="#C6FF3D"/>
+  <circle cx="834" cy="212" r="4" fill="#3DD6FF"/>
+  <circle cx="892" cy="236" r="4" fill="#C6FF3D"/>
+  <circle cx="868" cy="236" r="4" fill="#3DD6FF"/>
+  <circle cx="968" cy="300" r="7" fill="#C6FF3D"/>
+  <circle cx="792" cy="300" r="7" fill="#3DD6FF"/>
+  <circle cx="1030" cy="400" r="7" fill="#C6FF3D"/>
+  <circle cx="730" cy="400" r="7" fill="#3DD6FF"/>
+  <circle cx="1076" cy="492" r="7" fill="#C6FF3D"/>
+  <circle cx="684" cy="492" r="7" fill="#3DD6FF"/>
+  <circle cx="1102" cy="520" r="4" fill="#C6FF3D"/>
+  <circle cx="658" cy="520" r="4" fill="#3DD6FF"/>
+  <circle cx="1088" cy="530" r="4" fill="#C6FF3D"/>
+  <circle cx="672" cy="530" r="4" fill="#3DD6FF"/>
+  <circle cx="1066" cy="522" r="4" fill="#C6FF3D"/>
+  <circle cx="694" cy="522" r="4" fill="#3DD6FF"/>
+  <circle cx="936" cy="530" r="7" fill="#C6FF3D"/>
+  <circle cx="824" cy="530" r="7" fill="#3DD6FF"/>
+  <circle cx="946" cy="672" r="7" fill="#C6FF3D"/>
+  <circle cx="814" cy="672" r="7" fill="#3DD6FF"/>
+  <circle cx="954" cy="806" r="7" fill="#C6FF3D"/>
+  <circle cx="806" cy="806" r="7" fill="#3DD6FF"/>
+  <circle cx="944" cy="830" r="4" fill="#C6FF3D"/>
+  <circle cx="816" cy="830" r="4" fill="#3DD6FF"/>
+  <circle cx="990" cy="836" r="4" fill="#C6FF3D"/>
+  <circle cx="770" cy="836" r="4" fill="#3DD6FF"/>
+  <path d="M880 214 L1060 170" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1072" y="175" text-anchor="start" fill="#F4F7F2" font-size="17" font-weight="700">nose</text>
+  <text x="1072" y="194" text-anchor="start" fill="#8C968F" font-size="12">0</text>
+  <path d="M968 300 L1210 300" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="305" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftShoulder</text>
+  <text x="1222" y="324" text-anchor="start" fill="#8C968F" font-size="12">11</text>
+  <path d="M1030 400 L1210 400" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="405" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftElbow</text>
+  <text x="1222" y="424" text-anchor="start" fill="#8C968F" font-size="12">13</text>
+  <path d="M1076 492 L1210 480" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="485" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftWrist</text>
+  <text x="1222" y="504" text-anchor="start" fill="#8C968F" font-size="12">15</text>
+  <path d="M936 530 L1210 560" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="565" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftHip</text>
+  <text x="1222" y="584" text-anchor="start" fill="#8C968F" font-size="12">23</text>
+  <path d="M946 672 L1210 672" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="677" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftKnee</text>
+  <text x="1222" y="696" text-anchor="start" fill="#8C968F" font-size="12">25</text>
+  <path d="M954 806 L1210 790" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="1222" y="795" text-anchor="start" fill="#C6FF3D" font-size="17" font-weight="700">leftAnkle</text>
+  <text x="1222" y="814" text-anchor="start" fill="#8C968F" font-size="12">27</text>
+  <path d="M792 300 L550 300" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="305" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightShoulder</text>
+  <text x="538" y="324" text-anchor="end" fill="#8C968F" font-size="12">12</text>
+  <path d="M730 400 L550 400" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="405" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightElbow</text>
+  <text x="538" y="424" text-anchor="end" fill="#8C968F" font-size="12">14</text>
+  <path d="M684 492 L550 480" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="485" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightWrist</text>
+  <text x="538" y="504" text-anchor="end" fill="#8C968F" font-size="12">16</text>
+  <path d="M824 530 L550 560" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="565" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightHip</text>
+  <text x="538" y="584" text-anchor="end" fill="#8C968F" font-size="12">24</text>
+  <path d="M814 672 L550 672" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="677" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightKnee</text>
+  <text x="538" y="696" text-anchor="end" fill="#8C968F" font-size="12">26</text>
+  <path d="M806 806 L550 790" stroke="#4A524D" stroke-width="1.2" fill="none"/>
+  <text x="538" y="795" text-anchor="end" fill="#3DD6FF" font-size="17" font-weight="700">rightAnkle</text>
+  <text x="538" y="814" text-anchor="end" fill="#8C968F" font-size="12">28</text>
+  <rect x="30" y="150" width="300" height="166" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="50" y="182" fill="#F4F7F2" font-size="15" font-weight="700">Face</text>
+  <text x="50" y="208" fill="#8C968F" font-size="13">left/rightEyeInner  1, 4</text>
+  <text x="50" y="230" fill="#8C968F" font-size="13">left/rightEye  2, 5</text>
+  <text x="50" y="252" fill="#8C968F" font-size="13">left/rightEyeOuter  3, 6</text>
+  <text x="50" y="274" fill="#8C968F" font-size="13">left/rightEar  7, 8</text>
+  <text x="50" y="296" fill="#8C968F" font-size="13">mouthLeft, mouthRight  9, 10</text>
+  <rect x="30" y="380" width="300" height="122" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="50" y="412" fill="#F4F7F2" font-size="15" font-weight="700">Hands</text>
+  <text x="50" y="438" fill="#8C968F" font-size="13">left/rightPinky  17, 18</text>
+  <text x="50" y="460" fill="#8C968F" font-size="13">left/rightIndex  19, 20</text>
+  <text x="50" y="482" fill="#8C968F" font-size="13">left/rightThumb  21, 22</text>
+  <rect x="30" y="560" width="300" height="100" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="50" y="592" fill="#F4F7F2" font-size="15" font-weight="700">Feet</text>
+  <text x="50" y="618" fill="#8C968F" font-size="13">left/rightHeel  29, 30</text>
+  <text x="50" y="640" fill="#8C968F" font-size="13">left/rightFootIndex  31, 32</text>
+  <circle cx="1200" cy="860" r="7" fill="#C6FF3D"/><text x="1216" y="865" fill="#8C968F" font-size="14">person&#8217;s left</text>
+  <circle cx="1340" cy="860" r="7" fill="#3DD6FF"/><text x="1356" y="865" fill="#8C968F" font-size="14">person&#8217;s right</text>
+</svg>

@@ -1,0 +1,8 @@
+297 readiness  noBody
+535 bodyDetected 1
+864 readiness  moveLeft
+2535 readiness  tooClose
+4300 readiness  moving
+4997 readiness  ready
+6869 readiness  moving
+7403 readiness  ready

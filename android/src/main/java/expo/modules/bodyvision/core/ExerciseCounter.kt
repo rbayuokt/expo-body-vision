@@ -126,7 +126,8 @@ class ExerciseCounter(val definition: ExerciseDefinition) {
           "exercise" to d.id,
           "bodyId" to bodyId,
           "count" to count + 1,
-          "durationMs" to if (lastPeak.isFinite()) (t - lastPeak) * 1000 else 0.0
+          "durationMs" to if (lastPeak.isFinite()) (t - lastPeak) * 1000 else 0.0,
+          "joint" to joints.last().name
         )
         val name = joints[0].name
         if (name.startsWith("left")) payload["side"] = "left" else if (name.startsWith("right")) payload["side"] = "right"

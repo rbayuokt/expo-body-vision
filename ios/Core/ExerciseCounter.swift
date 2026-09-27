@@ -131,7 +131,7 @@ final class ExerciseCounter {
         armed[i] = false
         extreme[i] = v
         guard t - lastPeak >= d.minRep else { continue }
-        var payload: [String: Any] = ["exercise": d.id, "bodyId": bodyId, "count": count + 1, "durationMs": lastPeak.isFinite ? (t - lastPeak) * 1000 : 0]
+        var payload: [String: Any] = ["exercise": d.id, "bodyId": bodyId, "count": count + 1, "durationMs": lastPeak.isFinite ? (t - lastPeak) * 1000 : 0, "joint": joints[joints.count - 1].name]
         let name = joints[0].name
         if name.hasPrefix("left") { payload["side"] = "left" } else if name.hasPrefix("right") { payload["side"] = "right" }
         count += 1

@@ -44,7 +44,12 @@ export function StressScreen({ onBack }: DemoProps) {
           style={StyleSheet.absoluteFill}
           testInput={input}
           rules={RULES}
-          skeleton={{ trails: [{ joint: 'leftWrist', color: color.lime }, { joint: 'rightWrist', color: color.cyan }] }}
+          skeleton={{
+            trails: [
+              { joint: 'leftWrist', color: color.lime },
+              { joint: 'rightWrist', color: color.cyan },
+            ],
+          }}
           onRep={(e) => setReps(e.count)}
           onStats={onStats}
         />
@@ -52,8 +57,8 @@ export function StressScreen({ onBack }: DemoProps) {
       hud={
         <>
           <Text style={styles.note}>
-            Freezing JavaScript stops this panel from updating. The skeleton, trails and rep counting
-            keep running natively.
+            Freezing JavaScript stops this panel from updating. The skeleton, trails and rep
+            counting keep running natively.
           </Text>
           <View style={styles.row}>
             <Metric value={`${reps}`} label="Reps" tint={color.lime} testID="stress-reps" />

@@ -112,7 +112,7 @@ class InteractionEngine {
             TargetMode.hit -> if (speed >= target.minSpeed && t - lastHit[ti] >= target.cooldown) {
               lastHit[ti] = t
               hitTimes[ti] = t
-              emit(EngineEvent("targetHit", t, mapOf("target" to target.id, "joint" to joint.name, "bodyId" to bodyId, "speed" to speed)))
+              emit(EngineEvent("targetHit", t, mapOf("target" to target.id, "joint" to joint.name, "bodyId" to bodyId, "speed" to speed, "x" to cx, "y" to cy)))
             }
             TargetMode.zone -> if (overlapping && !inside[ti].contains(true)) {
               hitTimes[ti] = t

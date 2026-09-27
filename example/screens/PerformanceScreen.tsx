@@ -1,4 +1,8 @@
-import { BodyVisionView, type BodyVisionStats, type PerformanceMode } from '@rbayuokt/expo-body-vision';
+import {
+  BodyVisionView,
+  type BodyVisionStats,
+  type PerformanceMode,
+} from '@rbayuokt/expo-body-vision';
 import { registerDemoBackends } from 'demo-pose-backends';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -27,7 +31,8 @@ export function PerformanceScreen({ onBack }: DemoProps) {
   const [lastError, setLastError] = useState('-');
   const [delegate, setDelegate] = useState<'cpu' | 'gpu'>('cpu');
   const [model, setModel] = useState<ModelChoice>('default');
-  const f = (v: number | undefined, unit = '') => (v === undefined ? '-' : `${v.toFixed(0)}${unit}`);
+  const f = (v: number | undefined, unit = '') =>
+    v === undefined ? '-' : `${v.toFixed(0)}${unit}`;
 
   return (
     <DemoFrame
@@ -40,8 +45,16 @@ export function PerformanceScreen({ onBack }: DemoProps) {
           testInput={input}
           performance={mode}
           experimentalDelegate={delegate}
-          backend={model === 'default' ? undefined : model === 'platform' ? PLATFORM_BACKEND : 'mediapipe'}
-          model={model === 'heavy' ? HEAVY_MODEL : model === 'lite' || model === 'full' ? model : undefined}
+          backend={
+            model === 'default' ? undefined : model === 'platform' ? PLATFORM_BACKEND : 'mediapipe'
+          }
+          model={
+            model === 'heavy'
+              ? HEAVY_MODEL
+              : model === 'lite' || model === 'full'
+                ? model
+                : undefined
+          }
           onStats={setStats}
           onError={(e) => setLastError(`${e.code}: ${e.message}`)}
           onPerformanceChange={(e) =>
@@ -74,7 +87,10 @@ export function PerformanceScreen({ onBack }: DemoProps) {
           />
           <View style={styles.grid}>
             <Readout label="Drawn" value={f(stats?.renderFps, ' fps')} tint={color.lime} />
-            <Readout label="Pose" value={stats ? `${f(stats.inferenceFps)}/${f(stats.targetInferenceFps)} fps` : '-'} />
+            <Readout
+              label="Pose"
+              value={stats ? `${f(stats.inferenceFps)}/${f(stats.targetInferenceFps)} fps` : '-'}
+            />
             <Readout label="Pose time" value={f(stats?.inferenceMs, ' ms')} />
           </View>
           <View style={styles.grid}>

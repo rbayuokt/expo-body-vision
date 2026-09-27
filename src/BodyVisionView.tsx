@@ -27,6 +27,7 @@ import {
   type NativeEventBatch,
 } from './NativeBodyVisionView';
 import { BodyVisionError } from './errors';
+import { BodyEventsContext, type BodyVisionEvent } from './events';
 import { resolveAsset, resolveModel, type PoseModelSource } from './model';
 import { validateRule, type RuleDefinition } from './rules';
 import { BodySetupContext, type BodySetupContextValue } from './setup/context';
@@ -393,9 +394,21 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
 
     const setupContext = useSetupSession(setupOptions, startCalibration, latest);
 
+    const listeners = useRef(new Set<(event: BodyVisionEvent) => void>());
+    const subscribe = useCallback((listener: (event: BodyVisionEvent) => void) => {
+      listeners.current.add(listener);
+      return () => {
+        listeners.current.delete(listener);
+      };
+    }, []);
+
     const dispatch = useCallback(
       (event: NativeEvent) => {
         const p = latest.current;
+        const setupPose =
+          (event.type === 'poseEntered' || event.type === 'poseExited') &&
+          isSetupPoseId(String(event.pose));
+        if (!setupPose) for (const listener of listeners.current) listener(event);
         switch (event.type) {
           case 'readiness':
             setupContext.session?.readiness(event as unknown as ReadinessEvent);
@@ -490,9 +503,11 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
           onEvents={onEvents}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          <BodySetupContext.Provider value={setupContext.value}>
-            {props.children}
-          </BodySetupContext.Provider>
+          <BodyEventsContext.Provider value={subscribe}>
+            <BodySetupContext.Provider value={setupContext.value}>
+              {props.children}
+            </BodySetupContext.Provider>
+          </BodyEventsContext.Provider>
         </View>
         {debug ? <DebugPanel stats={stats} error={configError} /> : null}
       </View>

@@ -5,6 +5,7 @@ import {
   type Framing,
   type SetupState,
 } from '@rbayuokt/expo-body-vision';
+import { SetupConfetti } from '@rbayuokt/expo-body-vision/effects';
 import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -47,6 +48,7 @@ export function SetupScreen({ onBack }: DemoProps) {
           onSetupChange={(s) => setPhase(s.phase)}
           onSetupComplete={setCalibration}>
           <SetupOverlay />
+          <SetupConfetti />
         </BodyVisionView>
       }
       hud={

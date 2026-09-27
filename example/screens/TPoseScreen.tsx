@@ -1,4 +1,5 @@
 import { BodyVisionView, tPose } from '@rbayuokt/expo-body-vision';
+import { PoseAura } from '@rbayuokt/expo-body-vision/effects';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -27,7 +28,10 @@ export function TPoseScreen({ onBack }: DemoProps) {
           style={StyleSheet.absoluteFill}
           testInput={input}
           rules={RULES}
-          skeleton={{ jointColor: holding ? color.lime : color.text, boneColor: holding ? color.lime : color.text }}
+          skeleton={{
+            jointColor: holding ? color.lime : color.text,
+            boneColor: holding ? color.lime : color.text,
+          }}
           onPoseEntered={() => {
             setHolding(true);
             setTimes((n) => n + 1);
@@ -35,8 +39,9 @@ export function TPoseScreen({ onBack }: DemoProps) {
           onPoseExited={(e) => {
             setHolding(false);
             setLastMs(e.durationMs);
-          }}
-        />
+          }}>
+          <PoseAura />
+        </BodyVisionView>
       }
       overlay={
         <Text style={[styles.status, { color: holding ? color.lime : 'rgba(244,247,242,0.35)' }]}>
@@ -53,7 +58,10 @@ export function TPoseScreen({ onBack }: DemoProps) {
               tint={holding ? color.lime : color.muted}
               testID="tpose-state"
             />
-            <Readout label="Last hold" value={lastMs === null ? '-' : `${(lastMs / 1000).toFixed(1)} s`} />
+            <Readout
+              label="Last hold"
+              value={lastMs === null ? '-' : `${(lastMs / 1000).toFixed(1)} s`}
+            />
           </View>
         </View>
       }

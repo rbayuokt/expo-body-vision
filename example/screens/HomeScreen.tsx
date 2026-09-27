@@ -32,6 +32,7 @@ export const DEMOS = [
     detail: 'Count reps in a clip, compare models.',
     tag: 'Offline',
   },
+  { id: 'boxing', title: 'Boxing', detail: 'Punch counter with impact effects.', tag: 'Peak mode' },
   { id: 'exercise', title: 'Rep counter', detail: 'Push-ups and squats.', tag: 'State machine' },
   { id: 'tpose', title: 'T-pose trigger', detail: 'A pose rule written in JS.', tag: 'Rules' },
   { id: 'target', title: 'Target game', detail: 'Hands hit targets.', tag: 'Interaction' },

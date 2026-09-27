@@ -1,0 +1,9 @@
+301 readiness  noBody
+535 bodyDetected 1
+868 readiness  ready
+3466 readiness  moving
+3901 poseEntered tpose
+4198 readiness  ready
+5465 poseExited tpose
+5465 readiness  moving
+6134 readiness  ready

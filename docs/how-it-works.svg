@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="580" viewBox="0 0 1400 580" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="lime" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C6FF3D"/>
+    </marker>
+    <marker id="cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3DD6FF"/>
+    </marker>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="580" fill="#0B0D0C"/>
+
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">HOW IT WORKS</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">Two native loops, and JS only hears the results</text>
+
+  <!-- Native side -->
+  <rect x="30" y="104" width="1120" height="446" rx="26" fill="#111512" stroke="rgba(255,255,255,0.08)"/>
+  <text x="60" y="140" fill="#C6FF3D" font-size="12" font-weight="700" letter-spacing="2.5">NATIVE</text>
+  <text x="140" y="140" fill="#8C968F" font-size="12" font-weight="600" letter-spacing="1.5">SWIFT ON iOS, KOTLIN ON ANDROID</text>
+
+  <!-- Row 1: every pose -->
+  <text x="70" y="178" fill="#F4F7F2" font-size="13" font-weight="700" letter-spacing="2">EVERY POSE</text>
+  <text x="190" y="178" fill="#8C968F" font-size="13">5 to 30 per second, set by the phone</text>
+
+  <g>
+    <rect x="70" y="194" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="90" y="228" fill="#F4F7F2" font-size="18" font-weight="700">Camera</text>
+    <text x="90" y="252" fill="#8C968F" font-size="13">AVFoundation, CameraX</text>
+
+    <rect x="286" y="194" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="306" y="228" fill="#F4F7F2" font-size="18" font-weight="700">Pose model</text>
+    <text x="306" y="252" fill="#8C968F" font-size="13">ML Kit, MediaPipe, yours</text>
+
+    <rect x="502" y="194" width="176" height="80" rx="16" fill="#1A1F1C" stroke="#C6FF3D" stroke-opacity="0.55"/>
+    <text x="522" y="228" fill="#F4F7F2" font-size="18" font-weight="700">Tracker</text>
+    <text x="522" y="252" fill="#8C968F" font-size="13">smoothing, velocity</text>
+
+    <rect x="718" y="194" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="738" y="228" fill="#F4F7F2" font-size="18" font-weight="700">Rules engine</text>
+    <text x="738" y="252" fill="#8C968F" font-size="13">poses, reps, targets</text>
+
+    <rect x="934" y="194" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="954" y="228" fill="#F4F7F2" font-size="18" font-weight="700">Event queue</text>
+    <text x="954" y="252" fill="#8C968F" font-size="13">bounded, waits for JS</text>
+  </g>
+
+  <g stroke="#C6FF3D" stroke-width="2.5" fill="none" marker-end="url(#lime)">
+    <path d="M248 234 H282"/>
+    <path d="M464 234 H498"/>
+    <path d="M680 234 H714"/>
+    <path d="M896 234 H930"/>
+  </g>
+
+  <!-- Row 2: every display frame -->
+  <text x="70" y="352" fill="#F4F7F2" font-size="13" font-weight="700" letter-spacing="2">EVERY DISPLAY FRAME</text>
+  <text x="70" y="376" fill="#8C968F" font-size="13">60 to 120 fps, even when poses are slower</text>
+
+  <g>
+    <rect x="502" y="400" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="522" y="434" fill="#F4F7F2" font-size="18" font-weight="700">Prediction</text>
+    <text x="522" y="458" fill="#8C968F" font-size="13">joints at display time</text>
+
+    <rect x="718" y="400" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="738" y="434" fill="#F4F7F2" font-size="18" font-weight="700">Draw list</text>
+    <text x="738" y="458" fill="#8C968F" font-size="13">bones, joints, effects</text>
+
+    <rect x="934" y="400" width="176" height="80" rx="16" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="954" y="434" fill="#F4F7F2" font-size="18" font-weight="700">Overlay</text>
+    <text x="954" y="458" fill="#8C968F" font-size="13">CAShapeLayer, Canvas</text>
+  </g>
+
+  <g stroke="#C6FF3D" stroke-width="2.5" fill="none" marker-end="url(#lime)">
+    <path d="M590 276 V396" stroke-dasharray="6 6"/>
+    <path d="M680 440 H714"/>
+    <path d="M896 440 H930"/>
+  </g>
+
+  <!-- Note: JS never on the path -->
+  <rect x="70" y="400" width="392" height="120" rx="16" fill="rgba(198,255,61,0.07)" stroke="rgba(198,255,61,0.25)"/>
+  <text x="92" y="436" fill="#C6FF3D" font-size="12" font-weight="700" letter-spacing="2">NO JS ON THIS PATH</text>
+  <text x="92" y="466" fill="#F4F7F2" font-size="16" font-weight="600">Block the JS thread and the skeleton</text>
+  <text x="92" y="488" fill="#F4F7F2" font-size="16" font-weight="600">keeps moving and reps keep counting.</text>
+
+  <!-- JS side -->
+  <rect x="1186" y="186" width="190" height="96" rx="18" fill="#3DD6FF" fill-opacity="0.18" filter="url(#glow)"/>
+  <rect x="1186" y="186" width="190" height="96" rx="18" fill="#0F1A1E" stroke="#3DD6FF" stroke-width="1.5"/>
+  <text x="1206" y="222" fill="#3DD6FF" font-size="12" font-weight="700" letter-spacing="2">JAVASCRIPT</text>
+  <text x="1206" y="248" fill="#F4F7F2" font-size="18" font-weight="700">Your screen</text>
+  <text x="1206" y="268" fill="#8C968F" font-size="13">callbacks, React state</text>
+
+  <g stroke="#3DD6FF" stroke-width="2.5" fill="none">
+    <path d="M1112 234 H1182" marker-end="url(#cyan)"/>
+    <path d="M1281 184 V124 H806 V190" marker-end="url(#cyan)"/>
+  </g>
+  <text x="1120" y="222" fill="#3DD6FF" font-size="12" font-weight="600">events</text>
+  <text x="860" y="116" fill="#3DD6FF" font-size="13" font-weight="600">rules, setup and style, sent once</text>
+
+  <!-- Legend -->
+  <text x="1186" y="340" fill="#8C968F" font-size="13">
+    <tspan x="1186" dy="0">JS sends a description</tspan>
+    <tspan x="1186" dy="20">once and gets events</tspan>
+    <tspan x="1186" dy="20">like repCompleted back.</tspan>
+    <tspan x="1186" dy="20">Frames never cross over.</tspan>
+  </text>
+</svg>

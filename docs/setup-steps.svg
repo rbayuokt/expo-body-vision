@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="660" viewBox="0 0 1400 660" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="lime" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C6FF3D"/>
+    </marker>
+    <marker id="coral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#FF6B4A"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="660" fill="#0B0D0C"/>
+
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">GUIDED SETUP</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">Steps you choose, in a UI you choose</text>
+  <text x="30" y="106" fill="#8C968F" font-size="15">The default is position, then measure. Add a pose check or a countdown, or change the order.</text>
+
+  <!-- Steps -->
+  <rect x="30" y="134" width="1340" height="250" rx="26" fill="#111512" stroke="rgba(255,255,255,0.08)"/>
+
+  <g>
+    <rect x="60" y="168" width="230" height="130" rx="18" fill="#1A1F1C" stroke="#C6FF3D" stroke-opacity="0.55"/>
+    <text x="82" y="200" fill="#C6FF3D" font-size="12" font-weight="700" letter-spacing="2">STEP 1</text>
+    <text x="82" y="230" fill="#F4F7F2" font-size="20" font-weight="800">Position</text>
+    <text x="82" y="256" fill="#8C968F" font-size="13">in frame, head and feet visible,</text>
+    <text x="82" y="276" fill="#8C968F" font-size="13">centred, standing still</text>
+
+    <rect x="330" y="168" width="230" height="130" rx="18" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="352" y="200" fill="#8C968F" font-size="12" font-weight="700" letter-spacing="2">OPTIONAL</text>
+    <text x="352" y="230" fill="#F4F7F2" font-size="20" font-weight="800">Pose check</text>
+    <text x="352" y="256" fill="#8C968F" font-size="13">any pose rule, like a T-pose</text>
+    <text x="352" y="276" fill="#8C968F" font-size="13">or both arms up</text>
+
+    <rect x="600" y="168" width="230" height="130" rx="18" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="622" y="200" fill="#8C968F" font-size="12" font-weight="700" letter-spacing="2">STEP</text>
+    <text x="622" y="230" fill="#F4F7F2" font-size="20" font-weight="800">Measure</text>
+    <text x="622" y="256" fill="#8C968F" font-size="13">two seconds for torso, shoulders,</text>
+    <text x="622" y="276" fill="#8C968F" font-size="13">arm and leg length</text>
+
+    <rect x="870" y="168" width="230" height="130" rx="18" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+    <text x="892" y="200" fill="#8C968F" font-size="12" font-weight="700" letter-spacing="2">OPTIONAL</text>
+    <text x="892" y="230" fill="#F4F7F2" font-size="20" font-weight="800">Countdown</text>
+    <text x="892" y="256" fill="#8C968F" font-size="13">3, 2, 1, spoken if voice is on</text>
+
+    <rect x="1140" y="198" width="200" height="70" rx="35" fill="#C6FF3D"/>
+    <text x="1240" y="231" text-anchor="middle" fill="#11160A" font-size="20" font-weight="900">Done</text>
+    <text x="1240" y="253" text-anchor="middle" fill="#11160A" font-size="12" font-weight="600">onSetupComplete</text>
+  </g>
+
+  <g stroke="#C6FF3D" stroke-width="2.5" fill="none" marker-end="url(#lime)">
+    <path d="M292 233 H326"/>
+    <path d="M562 233 H596"/>
+    <path d="M832 233 H866"/>
+    <path d="M1102 233 H1136"/>
+  </g>
+
+  <path d="M985 300 V338 H175 V304" stroke="#FF6B4A" stroke-width="2" stroke-dasharray="6 6" fill="none" marker-end="url(#coral)"/>
+  <text x="580" y="364" text-anchor="middle" fill="#FF6B4A" font-size="13" font-weight="600">left the frame, or measuring failed, so start again from step 1</text>
+
+  <!-- Looks -->
+  <text x="30" y="436" fill="#F4F7F2" font-size="13" font-weight="700" letter-spacing="2">HOW IT LOOKS IS UP TO YOU</text>
+
+  <rect x="30" y="456" width="430" height="164" rx="22" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="56" y="494" fill="#C6FF3D" font-size="12" font-weight="700" letter-spacing="2">LEAST WORK</text>
+  <text x="56" y="526" fill="#F4F7F2" font-size="20" font-weight="800">Restyle ours</text>
+  <text x="56" y="556" fill="#8C968F" font-size="14">&lt;BodySetup /&gt; with your colours</text>
+  <text x="56" y="578" fill="#8C968F" font-size="14">and spacing, your own wording</text>
+  <text x="56" y="600" fill="#8C968F" font-size="14">in any language, and voice</text>
+
+  <rect x="485" y="456" width="430" height="164" rx="22" fill="#1A1F1C" stroke="#3DD6FF" stroke-opacity="0.6"/>
+  <text x="511" y="494" fill="#3DD6FF" font-size="12" font-weight="700" letter-spacing="2">ANY DESIGN</text>
+  <text x="511" y="526" fill="#F4F7F2" font-size="20" font-weight="800">Draw your own UI</text>
+  <text x="511" y="556" fill="#8C968F" font-size="14">Skip &lt;BodySetup /&gt; and render from</text>
+  <text x="511" y="578" fill="#8C968F" font-size="14">onSetupChange or useBodySetup(),</text>
+  <text x="511" y="600" fill="#8C968F" font-size="14">step, prompt, progress, countdown</text>
+
+  <rect x="940" y="456" width="430" height="164" rx="22" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="966" y="494" fill="#8C968F" font-size="12" font-weight="700" letter-spacing="2">FULL CONTROL</text>
+  <text x="966" y="526" fill="#F4F7F2" font-size="20" font-weight="800">Build your own flow</text>
+  <text x="966" y="556" fill="#8C968F" font-size="14">Wire the public pieces yourself,</text>
+  <text x="966" y="578" fill="#8C968F" font-size="14">readiness events, pose rules,</text>
+  <text x="966" y="600" fill="#8C968F" font-size="14">calibrate() and your own timers</text>
+</svg>

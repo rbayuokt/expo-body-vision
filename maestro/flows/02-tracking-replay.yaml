@@ -1,0 +1,21 @@
+appId: expo.modules.bodyvision.example
+name: Replayed body is detected and surfaced to JS
+tags:
+  - smoke
+  - camera
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-tracking
+- tapOn:
+    id: demo-tracking
+- extendedWaitUntil:
+    visible:
+      id: body-status
+      text: "Tracking #1"
+    timeout: 10000

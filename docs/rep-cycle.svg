@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="700" viewBox="0 0 1400 700" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <rect width="1400" height="700" fill="#0B0D0C"/>
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">REPS</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">Why a rep counts, or doesn&#8217;t</text>
+  <text x="30" y="106" fill="#8C968F" font-size="15">Elbow angle from the test recording of two push-ups and a half rep, with the events the engine produced.</text>
+  <rect x="100" y="140" width="1280" height="460" rx="22" fill="#111512" stroke="rgba(255,255,255,0.10)"/>
+  <rect x="120" y="510" width="185.57818181818186" height="16" rx="4" fill="#C6FF3D" fill-opacity="0.8"/>
+  <rect x="307.57818181818186" y="510" width="43.541818181818144" height="16" rx="4" fill="#3DD6FF" fill-opacity="0.8"/>
+  <rect x="353.12" y="510" width="140.48727272727274" height="16" rx="4" fill="#8B5CFF" fill-opacity="0.8"/>
+  <rect x="495.60727272727274" y="510" width="35.4254545454545" height="16" rx="4" fill="#FFC23D" fill-opacity="0.8"/>
+  <rect x="533.0327272727272" y="510" width="171.1490909090909" height="16" rx="4" fill="#C6FF3D" fill-opacity="0.8"/>
+  <rect x="706.1818181818181" y="510" width="110.05090909090916" height="16" rx="4" fill="#3DD6FF" fill-opacity="0.8"/>
+  <rect x="818.2327272727273" y="510" width="164.38545454545454" height="16" rx="4" fill="#C6FF3D" fill-opacity="0.8"/>
+  <rect x="984.6181818181818" y="510" width="43.09090909090912" height="16" rx="4" fill="#3DD6FF" fill-opacity="0.8"/>
+  <rect x="1029.709090909091" y="510" width="124.93090909090915" height="16" rx="4" fill="#8B5CFF" fill-opacity="0.8"/>
+  <rect x="1156.64" y="510" width="50.98181818181797" height="16" rx="4" fill="#FFC23D" fill-opacity="0.8"/>
+  <rect x="1209.621818181818" y="510" width="148.37818181818193" height="16" rx="4" fill="#C6FF3D" fill-opacity="0.8"/>
+  <line x1="120" x2="1360" y1="240" y2="240" stroke="#C6FF3D" stroke-width="1.5" />
+  <text x="108" y="244" text-anchor="end" fill="#C6FF3D" font-size="12">top 150°</text>
+  <line x1="120" x2="1360" y1="266.66666666666663" y2="266.66666666666663" stroke="#4A524D" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <text x="108" y="270.66666666666663" text-anchor="end" fill="#4A524D" font-size="12">140°</text>
+  <line x1="120" x2="1360" y1="346.66666666666663" y2="346.66666666666663" stroke="#4A524D" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <text x="108" y="350.66666666666663" text-anchor="end" fill="#4A524D" font-size="12">110°</text>
+  <line x1="120" x2="1360" y1="373.3333333333333" y2="373.3333333333333" stroke="#8B5CFF" stroke-width="1.5" />
+  <text x="108" y="377.3333333333333" text-anchor="end" fill="#8B5CFF" font-size="12">bottom 100°</text>
+  <path d="M119.3 207.0 L126.8 183.0 L135.8 214.3 L142.8 185.5 L150.0 258.6 L157.4 186.9 L165.1 239.8 L172.3 201.6 L180.2 225.3 L188.1 202.7 L194.9 175.9 L202.1 227.7 L210.6 190.8 L217.6 174.7 L224.8 198.2 L232.5 179.1 L239.9 217.5 L247.8 198.6 L255.0 212.3 L263.6 218.7 L269.9 236.8 L278.5 178.2 L284.8 256.5 L292.2 254.8 L299.9 247.2 L307.6 310.7 L315.5 286.7 L323.4 288.7 L329.7 322.1 L338.5 322.5 L345.5 372.4 L353.1 398.4 L360.8 396.6 L368.7 379.3 L375.7 415.3 L383.6 404.0 L391.0 440.4 L397.3 448.5 L405.0 442.9 L412.9 408.4 L420.5 423.8 L427.3 478.9 L435.0 408.6 L443.5 419.2 L450.5 422.6 L458.2 353.4 L465.6 359.8 L474.0 395.5 L481.0 346.4 L488.6 369.3 L495.6 316.8 L503.0 305.6 L510.3 264.5 L517.7 225.9 L526.5 272.8 L533.0 214.4 L540.5 224.1 L548.6 216.6 L555.6 194.8 L562.8 208.6 L571.1 219.7 L579.0 226.7 L586.0 189.7 L593.9 230.7 L601.1 216.0 L609.0 200.3 L615.3 174.2 L623.7 173.9 L631.3 226.4 L639.2 177.3 L646.7 194.4 L654.1 249.8 L661.3 165.9 L669.2 204.4 L676.9 201.2 L683.6 276.9 L691.5 260.2 L697.8 269.7 L706.2 282.6 L713.4 299.8 L721.5 297.4 L728.7 303.0 L736.6 308.7 L744.5 281.8 L751.3 280.0 L759.2 320.9 L766.2 278.9 L774.0 287.8 L781.7 275.8 L788.9 277.1 L796.1 216.6 L803.6 265.2 L810.6 240.0 L818.2 209.6 L827.0 217.8 L834.5 206.8 L841.7 233.1 L848.2 206.1 L856.6 175.1 L864.2 202.7 L871.9 211.8 L879.8 174.6 L886.3 180.3 L894.9 216.2 L901.9 203.6 L909.5 239.4 L916.8 189.4 L924.6 171.8 L931.2 195.6 L940.0 201.6 L946.7 212.4 L954.2 244.3 L961.2 260.5 L969.1 264.1 L976.3 294.0 L984.6 307.4 L992.3 303.9 L999.7 314.0 L1006.9 328.7 L1015.1 365.8 L1022.0 369.3 L1029.7 388.8 L1037.6 424.6 L1044.4 423.4 L1051.6 426.2 L1059.5 432.6 L1067.4 443.5 L1075.0 391.6 L1081.6 426.7 L1089.5 457.2 L1096.9 414.0 L1104.6 414.2 L1111.5 444.6 L1119.2 394.6 L1126.9 384.6 L1134.5 381.8 L1141.5 362.3 L1148.7 318.9 L1156.6 342.5 L1163.9 310.2 L1171.5 300.0 L1180.3 289.5 L1188.0 250.6 L1194.1 245.4 L1201.7 230.0 L1209.6 249.3 L1217.3 218.2 L1225.2 191.8 L1231.9 164.3 L1239.6 236.2 L1247.7 171.8 L1255.2 195.3 L1262.8 190.1 L1269.8 236.2 L1277.7 188.7 L1284.7 169.6 L1292.4 211.2" fill="none" stroke="#F4F7F2" stroke-width="2.5" stroke-linejoin="round"/>
+  <line x1="533.0327272727272" x2="533.0327272727272" y1="154" y2="480" stroke="#C6FF3D" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="495.03272727272724" y="122" width="76" height="28" rx="14" fill="#C6FF3D"/>
+  <text x="533.0327272727272" y="141" text-anchor="middle" fill="#0B0D0C" font-size="13" font-weight="800">Rep 1</text>
+  <line x1="818.2327272727273" x2="818.2327272727273" y1="154" y2="480" stroke="#FF6B4A" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="718.2327272727273" y="122" width="200" height="28" rx="14" fill="#FF6B4A"/>
+  <text x="818.2327272727273" y="141" text-anchor="middle" fill="#0B0D0C" font-size="13" font-weight="800">Not counted, incomplete</text>
+  <line x1="1209.621818181818" x2="1209.621818181818" y1="154" y2="480" stroke="#C6FF3D" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="1171.621818181818" y="122" width="76" height="28" rx="14" fill="#C6FF3D"/>
+  <text x="1209.621818181818" y="141" text-anchor="middle" fill="#0B0D0C" font-size="13" font-weight="800">Rep 2</text>
+  <text x="120" y="552" text-anchor="middle" fill="#8C968F" font-size="12">0 s</text>
+  <text x="345.4545454545455" y="552" text-anchor="middle" fill="#8C968F" font-size="12">1 s</text>
+  <text x="570.909090909091" y="552" text-anchor="middle" fill="#8C968F" font-size="12">2 s</text>
+  <text x="796.3636363636364" y="552" text-anchor="middle" fill="#8C968F" font-size="12">3 s</text>
+  <text x="1021.8181818181819" y="552" text-anchor="middle" fill="#8C968F" font-size="12">4 s</text>
+  <text x="1247.2727272727273" y="552" text-anchor="middle" fill="#8C968F" font-size="12">5 s</text>
+  <rect x="120" y="638" width="16" height="16" rx="4" fill="#C6FF3D"/><text x="144" y="651" fill="#8C968F" font-size="14">top</text>
+  <rect x="270" y="638" width="16" height="16" rx="4" fill="#3DD6FF"/><text x="294" y="651" fill="#8C968F" font-size="14">going down</text>
+  <rect x="420" y="638" width="16" height="16" rx="4" fill="#8B5CFF"/><text x="444" y="651" fill="#8C968F" font-size="14">bottom</text>
+  <rect x="570" y="638" width="16" height="16" rx="4" fill="#FFC23D"/><text x="594" y="651" fill="#8C968F" font-size="14">coming up</text>
+  <text x="1360" y="651" text-anchor="end" fill="#8C968F" font-size="14">A rep is also rejected when it&#8217;s too fast, too slow, breaks form or loses tracking</text>
+</svg>

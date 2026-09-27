@@ -1,0 +1,12 @@
+appId: expo.modules.bodyvision.example
+name: App launches and the demo menu renders
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- assertVisible:
+    id: home
+- assertVisible:
+    id: demo-tracking

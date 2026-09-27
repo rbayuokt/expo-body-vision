@@ -1,0 +1,3 @@
+0 bodyDetected 1
+1635 poseEntered tpose
+3098 poseExited tpose

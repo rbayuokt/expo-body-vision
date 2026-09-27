@@ -1,0 +1,4 @@
+-2 bodyDetected 1
+334 readiness  getIntoPosition
+1535 readiness  moving
+1998 readiness  ready

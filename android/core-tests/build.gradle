@@ -1,0 +1,31 @@
+plugins {
+  id 'org.jetbrains.kotlin.jvm' version '2.1.20'
+}
+
+repositories {
+  mavenCentral()
+}
+
+kotlin {
+  jvmToolchain(17)
+}
+
+sourceSets {
+  main.kotlin.srcDirs = ['../src/main/java/expo/modules/bodyvision/core']
+  test.kotlin.srcDirs = ['../src/test/java/expo/modules/bodyvision/core']
+}
+
+dependencies {
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.json:json:20240303'
+}
+
+test {
+  // Fixtures and goldens are read at runtime. Without this Gradle skips the task when only they change.
+  inputs.dir('../../fixtures')
+  environment 'BODY_VISION_FIXTURES', file('../../fixtures').absolutePath
+  testLogging {
+    events 'failed'
+    exceptionFormat 'full'
+  }
+}

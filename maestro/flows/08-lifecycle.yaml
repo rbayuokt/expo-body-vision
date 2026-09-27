@@ -1,0 +1,26 @@
+appId: expo.modules.bodyvision.example
+name: Repeated pause, resume, unmount and remount does not crash
+tags:
+  - lifecycle
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-lifecycle
+- tapOn:
+    id: demo-lifecycle
+- tapOn:
+    id: lifecycle-run
+- extendedWaitUntil:
+    visible:
+      id: lifecycle-cycles
+      text: "20/20"
+    timeout: 60000
+- tapOn:
+    id: back
+- assertVisible:
+    id: home

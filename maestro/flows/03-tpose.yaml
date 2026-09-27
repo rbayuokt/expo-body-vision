@@ -1,0 +1,33 @@
+appId: expo.modules.bodyvision.example
+name: Native T-pose rule fires once for a held pose and ignores a flicker
+tags:
+  - smoke
+  - exercise
+---
+- launchApp:
+    clearState: true
+- setOrientation: PORTRAIT
+- tapOn:
+    id: input-replay
+- scrollUntilVisible:
+    element:
+      id: demo-tpose
+- tapOn:
+    id: demo-tpose
+# The hold lasts ~1.6 s, shorter than Maestro's polling can reliably catch. The count persists.
+- extendedWaitUntil:
+    visible:
+      id: tpose-count
+      text: "1"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: tpose-state
+      text: "waiting"
+    timeout: 10000
+# The recording ends with a 0.2 s flicker that must not count.
+- waitForAnimationToEnd:
+    timeout: 4000
+- assertVisible:
+    id: tpose-count
+    text: "1"

@@ -6,6 +6,7 @@ import {
   type ExercisePhase,
   type RepRejectionReason,
 } from '@rbayuokt/expo-body-vision';
+import { RepEffect } from '@rbayuokt/expo-body-vision/effects';
 import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -94,6 +95,8 @@ export function ExerciseScreen({ onBack }: DemoProps) {
           onExercisePhase={(e) => setPhase(e.phase)}
           onRepRejected={(e) => setRejected(REASON[e.reason])}>
           <SetupOverlay />
+          {counting ? <RepEffect /> : null}
+          {counting ? <RepEffect look="levelUp" every={5} /> : null}
         </BodyVisionView>
       }
       hud={

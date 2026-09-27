@@ -142,6 +142,10 @@ export interface RepEvent extends BodyEventBase {
   durationMs: number;
   /** Peak mode with a mirrored metric: which side's movement it was. */
   side?: 'left' | 'right';
+  /** Peak mode: the joint that moved, and where it was in view points when it counted. */
+  joint?: JointName;
+  x?: number;
+  y?: number;
 }
 
 export type RepRejectionReason = 'incomplete' | 'too-fast' | 'too-slow' | 'form' | 'lost';
@@ -157,6 +161,9 @@ export interface TargetHitEvent extends BodyEventBase {
   bodyId: number;
   /** View short-sides per second. */
   speed: number;
+  /** Target center in view points. */
+  x: number;
+  y: number;
 }
 
 export interface ZoneEvent extends BodyEventBase {

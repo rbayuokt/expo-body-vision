@@ -57,7 +57,7 @@ final class BodyEngine {
     let g = geometry
     let id = tracker.bodyId
     for p in poses { p.update(g, at: t, bodyId: id, emit: emit) }
-    for e in exercises { e.update(g, at: t, bodyId: id, emit: emit) }
+    for e in exercises { e.update(g, at: t, bodyId: id) { emit(placed($0)) } }
     interaction.update(tracker, view: view, at: t, bodyId: id, emit: emit)
     if let e = readiness?.update(tracker, view: view, at: t) { emit(e) }
 
@@ -74,6 +74,16 @@ final class BodyEngine {
         emit(EngineEvent("calibrationFailed", t, ["reason": reason]))
       }
     }
+  }
+
+  /// Peak reps name the joint that moved. This adds where it is on screen, for effects.
+  private func placed(_ event: EngineEvent) -> EngineEvent {
+    guard view.isValid, let name = event.payload["joint"] as? String, let joint = Joint.named(name) else { return event }
+    var e = event
+    let p = view.point(x: tracker.x(joint.rawValue), y: tracker.y(joint.rawValue))
+    e.payload["x"] = p.x
+    e.payload["y"] = p.y
+    return e
   }
 
   func startCalibration(duration: Double, at t: Double) {

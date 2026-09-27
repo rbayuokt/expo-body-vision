@@ -32,6 +32,9 @@ detector.
   while the overlay stays at display rate
 - **Video files** run through the same engine without a camera, so you can count reps in a
   recorded workout, compare models on identical frames, or play the clip with the overlay
+- **Effects** for hits, reps, combos, held poses and setup: anime, lightning, fire, pixel and
+  shatter hits, rep slams, level ups, combo fever, an aura and confetti, all configurable, or
+  your own shader through `createImpactEffect`
 - **Portrait and landscape**, front and back camera, mirroring handled for you
 - **Swappable pose backends**. ML Kit and MediaPipe are built in, and you can load your own
   `.task` model file or register your own Swift or Kotlin detector
@@ -45,7 +48,8 @@ detector.
 | Module and bridge | Expo Modules API, Swift | Expo Modules API, Kotlin |
 | Camera | AVFoundation, BGRA buffers rotated upright on the connection | CameraX 1.6.2, SurfaceView preview, RGBA analysis frames |
 | Pose model (default) | MediaPipe Pose Landmarker 1.0.0, lite and full models bundled | ML Kit Pose 18.0.0-beta5, bundled model |
-| Pose model (also built in) | | MediaPipe Pose Landmarker 1.0.0 |
+| Pose model (also built in) | None. Add your own through `BodyVisionBackends`, like the example's Apple Vision backend | MediaPipe Pose Landmarker 1.0.0 |
+| Video files | AVAssetReader for analysis, AVPlayer for the live preview | MediaMetadataRetriever for analysis, MediaPlayer on a TextureView for the live preview |
 | Body engine | Swift, Foundation only: One Euro smoothing, prediction, rules, exercises, hit testing, readiness, calibration | The same engine in Kotlin, plain JVM |
 | Overlay | CAShapeLayer, driven by CADisplayLink | Hardware-accelerated Canvas view, driven by Choreographer |
 | Minimum OS | iOS 15.1 | As set by Expo |
@@ -53,7 +57,7 @@ detector.
 | Area | Choice |
 | --- | --- |
 | Public API | TypeScript, React components and plain rule definitions |
-| Setup overlay (optional) | React Native Skia and Reanimated, only in the `/setup` entry |
+| Setup overlay and effects (optional) | React Native Skia and Reanimated, only in the `/setup` and `/effects` entries |
 | Voice (optional) | expo-speech, loaded only when `voice` is on |
 | Custom model files (optional) | expo-asset, loaded only when `model` is a bundled file |
 | Tests | Jest, XCTest on macOS, JUnit on the JVM, Maestro for end-to-end |
@@ -105,6 +109,9 @@ npx expo install expo-speech                                          # voice pr
   - [Tuning and reusing calibration](#tuning-and-reusing-calibration)
   - [Prompts and voice](#prompts-and-voice)
 - [Styling the skeleton](#styling-the-skeleton)
+- [Effects](#effects)
+  - [Tuning them](#tuning-them)
+  - [Your own effect](#your-own-effect)
 - [Analyzing a video file](#analyzing-a-video-file)
   - [Watching it with the overlay](#watching-it-with-the-overlay)
 - [Performance](#performance)
@@ -265,6 +272,9 @@ import { punch } from '@rbayuokt/expo-body-vision';
 `punch()` is that preset on the elbow angle. Smoothing blunts short spikes, so turn it down for
 fast strikes. On a 30 fps clip with a burst of ten punches in one second it still misses some,
 because the motion blur hides the arm in those frames.
+
+A peak rep also carries `joint` (the wrist for `punch()`) and `x`, `y`, where that joint was in
+view points when it counted. [Effects](#effects) use that to land on the fist.
 
 ### Targets
 
@@ -456,6 +466,127 @@ The skeleton is drawn natively, and you style it with a plain object.
 Style changes reconfigure the native renderer without restarting the camera or the model.
 `skeleton={false}` hides it. Bones and joints fade with confidence unless
 `fadeWithConfidence` is off.
+
+## Effects
+
+Ready-made effects for the moments a workout or game cares about: a punch lands, a rep counts
+or fails, a combo builds, a pose holds, setup finishes. They live in their own entry, so apps
+that don't use them never load Skia or Reanimated. Each one is a child of `BodyVisionView` that
+listens to its events, draws with a Skia shader and animates on the UI thread.
+
+```tsx
+import { BodyVisionView, punch, squat } from '@rbayuokt/expo-body-vision';
+import { ComboFever, ImpactEffect, RepEffect, useImpactShake } from '@rbayuokt/expo-body-vision/effects';
+import Animated from 'react-native-reanimated';
+
+const shake = useImpactShake();
+
+<Animated.View style={[{ flex: 1 }, shake.style]}>
+  <BodyVisionView rules={[punch(), squat()]} smoothing="none">
+    <ImpactEffect look="lightning" onImpact={shake.shake} />
+    <RepEffect exercises={['squat']} />
+    <ComboFever from={5} />
+  </BodyVisionView>
+</Animated.View>
+```
+
+| Effect | Fires on | What it looks like |
+| --- | --- | --- |
+| `ImpactEffect look="anime"` | Peak reps with a position, target hits | Speed lines, jagged ink starburst, POW! |
+| `ImpactEffect look="lightning"` | Same | Flickering bolts crack out, ZAP! |
+| `ImpactEffect look="fire"` | Same | A flame burst with rising embers, FWOOSH! |
+| `ImpactEffect look="pixel"` | Same | 8-bit pixel ring, a +1 floats up |
+| `ImpactEffect look="shatter"` | Same | Glass cracks, then shards fall away, CRACK! |
+| `RepEffect` | Every rep and rejection | The count slams in with GOOD! or PERFECT!, a rejected rep cracks red with the reason |
+| `RepEffect look="levelUp"` | Every `every` reps | A golden ring sweeps round with sparkles, LEVEL 2 |
+| `ComboFever` | Reps chained into a combo | Flames lick in from the edges and grow, x10 COMBO |
+| `PoseAura` | While a pose holds | An energy aura rises from the edges, stronger the longer you hold |
+| `SetupConfetti` | Guided setup finishing, or `trigger` changing | Confetti and READY! |
+
+Hit effects land where it happened. A peak rep carries the moving joint's position (see
+[Exercises](#exercises)) and a target hit carries the target's, so `ImpactEffect` works for
+punches, any other `mode: 'peak'` exercise and the target game. `RepEffect` needs no position,
+so it suits squats and push-ups.
+
+### Tuning them
+
+Every effect takes `level`, from light to full.
+
+| Level | Hit effects | Others |
+| --- | --- | --- |
+| `minimal` | Two hits at a time, only the burst near the hit, no words or extra layers | Rep text only, combo banner only, a low aura strip, confetti label only |
+| `balanced` | Three hits, drawn near the hit, words and speed lines, no flash | Bursts near the middle, the lower half of the aura |
+| `max` | Six hits over the whole view, every layer | Everything over the whole view |
+| `auto` (default) | `balanced`, dropping to `minimal` while the view reduces effects | Same |
+
+The view reduces effects when `performance="auto"` finds the phone can't keep up, so on a slow
+phone the effects step down on their own. Pick a level to fix it, and the layer props below
+still override it.
+
+
+`ImpactEffect` takes `look`, `on` (`'reps'`, `'hits'` or `'both'`), `sources` (exercise or
+target ids), `colors` (`{ left, right }` per side of the body), `words` (your own, or `false`),
+`wordStyle`, `size`, `durationMs`, `speedLines`, `flash`, `ring` and `onImpact`.
+
+```tsx
+<ImpactEffect look="anime" words={false} speedLines={false} size={80} colors={{ left: '#FFC23D', right: '#FF6B4A' }} />
+```
+
+`RepEffect` takes `look`, `exercises`, `every` (level up), `perfectAfter` (clean reps in a row
+before PERFECT!), `labels` (any of `good`, `perfect` and the rejection reasons, `''` to stay
+quiet), `levelLabel`, `colors`, `showCount`, `textStyle`, `size`, `durationMs` and `onPlay`.
+`ComboFever` takes `from`, `full`, `gapMs`, `exercises`, `color`, `banner`, `bannerStyle` and
+`onCombo`. `PoseAura` takes `poses`, `growMs` and `color`. `SetupConfetti` takes `colors`,
+`label`, `labelStyle`, `durationMs` and `trigger`.
+
+`useImpactShake()` returns `{ style, shake }`. Put `style` on an `Animated.View` around the view
+and call `shake` from `onImpact` for a jolt on every hit.
+
+### Your own effect
+
+`createImpactEffect` turns a shader into a hit effect with the same props. The library handles
+when it fires, where, the 0 to 1 animation, words and cleanup. Your SkSL declares whichever of
+these uniforms it needs: `float2 center` (view points), `float progress` (0 to 1), `float radius`,
+`float3 tint` (0 to 1), `float seed` (random per hit), and `float useLines`, `useFlash`, `useRing`
+(0 or 1). Return premultiplied color.
+
+```tsx
+import { createImpactEffect } from '@rbayuokt/expo-body-vision/effects';
+
+const Ripple = createImpactEffect({
+  shader: `
+    uniform float2 center;
+    uniform float progress;
+    uniform float radius;
+    uniform float3 tint;
+    half4 main(float2 p) {
+      float d = abs(length(p - center) - radius * progress);
+      float a = smoothstep(4.0, 0.0, d) * (1.0 - progress);
+      return half4(half3(tint * a), half(a));
+    }`,
+  words: ['SPLASH!'],
+  durationMs: 600,
+});
+
+<Ripple colors={{ left: '#3DD6FF', right: '#3DD6FF' }} />
+```
+
+For anything else, `useBodyVisionEvents` gives any child of the view the same events the
+callbacks get, so an effect can react to reps, poses or hits without extra props.
+
+```tsx
+import { useBodyVisionEvents } from '@rbayuokt/expo-body-vision';
+
+function Confetti() {
+  useBodyVisionEvents((e) => {
+    if (e.type === 'poseEntered') burst();
+  });
+  return null;
+}
+```
+
+Effects draw over the camera, they don't warp it. Bending the video itself would need native
+rendering, which none of these do.
 
 ## Analyzing a video file
 
@@ -703,11 +834,11 @@ A few things behave differently per platform.
 
 `example/` has a screen per concept, covering body tracking, guided setup, a custom setup with
 its own UI and steps (T-pose to confirm, an edge glow while measuring, a countdown), rep
-counter, T-pose, target game, custom skeleton, video analysis (live overlay preview, punch
-counting, a compare-all-models button), a JS-freeze demo (blocks the JS thread for four seconds
-while tracking and counting continue), performance with a model picker, and a mount/unmount
-lifecycle loop. A switch on the home screen swaps the live camera for recorded
-input.
+counter, T-pose, target game, custom skeleton, boxing (punch counter with left and right, combos
+and every hit look), video analysis (live overlay preview, punch counting, a compare-all-models
+button), a JS-freeze demo (blocks the JS thread for four seconds while tracking and counting
+continue), performance with a model picker, and a mount/unmount lifecycle loop. A switch on the
+home screen swaps the live camera for recorded input.
 
 ```bash
 cd example

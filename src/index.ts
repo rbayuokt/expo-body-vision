@@ -31,6 +31,7 @@ export {
   useCameraPermissions,
 } from './permissions';
 export { parseBodySequence } from './testing';
+export { useBodyVisionEvents, type BodyVisionEvent } from './events';
 export type { PoseModelSource } from './model';
 export { BodySetupContext, useBodySetup, type BodySetupContextValue } from './setup/context';
 export { DEFAULT_SETUP_PROMPTS, promptForReadiness, type SetupPrompt } from './setup/prompts';

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BackHandler } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { BoxingScreen } from './screens/BoxingScreen';
 import { CustomSetupScreen } from './screens/CustomSetupScreen';
 import { ExerciseScreen } from './screens/ExerciseScreen';
 import { HomeScreen, type DemoId } from './screens/HomeScreen';
@@ -30,6 +31,7 @@ const SCREENS: Record<DemoId, (props: DemoProps) => React.JSX.Element> = {
   setup: SetupScreen,
   customSetup: CustomSetupScreen,
   video: VideoScreen,
+  boxing: BoxingScreen,
   skeleton: SkeletonScreen,
   tpose: TPoseScreen,
   exercise: ExerciseScreen,

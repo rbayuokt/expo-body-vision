@@ -1,4 +1,8 @@
-import { BodyVisionView, type SkeletonStyle, type SmoothingPreset } from '@rbayuokt/expo-body-vision';
+import {
+  BodyVisionView,
+  type SkeletonStyle,
+  type SmoothingPreset,
+} from '@rbayuokt/expo-body-vision';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -63,7 +67,12 @@ export function SkeletonScreen({ onBack }: DemoProps) {
           </View>
           <View style={styles.group}>
             <Label>Smoothing</Label>
-            <Choice options={SMOOTHING} value={smoothing} onChange={setSmoothing} testIDPrefix="smoothing" />
+            <Choice
+              options={SMOOTHING}
+              value={smoothing}
+              onChange={setSmoothing}
+              testIDPrefix="smoothing"
+            />
           </View>
         </>
       }

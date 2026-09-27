@@ -94,7 +94,7 @@ final class InteractionEngine {
             if speed >= target.minSpeed && t - lastHit[ti] >= target.cooldown {
               lastHit[ti] = t
               hitTimes[ti] = t
-              emit(EngineEvent("targetHit", t, ["target": target.id, "joint": joint.name, "bodyId": bodyId, "speed": speed]))
+              emit(EngineEvent("targetHit", t, ["target": target.id, "joint": joint.name, "bodyId": bodyId, "speed": speed, "x": center.x, "y": center.y]))
             }
           case .zone:
             if overlapping && !inside[ti].contains(true) {

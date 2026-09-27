@@ -1,4 +1,5 @@
 import { BodyVisionView, defineTarget } from '@rbayuokt/expo-body-vision';
+import { ImpactEffect } from '@rbayuokt/expo-body-vision/effects';
 import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -49,13 +50,21 @@ export function TargetScreen({ onBack }: DemoProps) {
           style={recorded ? styles.recorded : StyleSheet.absoluteFill}
           testInput={input}
           rules={rules}
-          skeleton={{ trails: [{ joint: 'leftWrist', color: color.coral }, { joint: 'rightWrist', color: color.cyan }] }}
+          skeleton={{
+            trails: [
+              { joint: 'leftWrist', color: color.coral },
+              { joint: 'rightWrist', color: color.cyan },
+            ],
+          }}
           onTargetHit={(e) => {
             setHits((n) => n + 1);
-            setLast(`${e.joint.startsWith('left') ? 'Left' : 'Right'} hand, ${e.speed.toFixed(1)}/s`);
+            setLast(
+              `${e.joint.startsWith('left') ? 'Left' : 'Right'} hand, ${e.speed.toFixed(1)}/s`
+            );
             setSpot((s) => (s + 1) % SPOTS.length);
-          }}
-        />
+          }}>
+          <ImpactEffect look="shatter" on="hits" />
+        </BodyVisionView>
       }
       hud={
         <View style={styles.row}>

@@ -60,7 +60,7 @@ class BodyEngine {
     val g = geometry
     val id = tracker.bodyId
     for (p in poses) p.update(g, t, id, emit)
-    for (e in exercises) e.update(g, t, id, emit)
+    for (e in exercises) e.update(g, t, id) { emit(placed(it)) }
     interaction.update(tracker, view, t, id, emit)
     readiness?.update(tracker, view, t)?.let(emit)
 
@@ -77,6 +77,14 @@ class BodyEngine {
         emit(EngineEvent("calibrationFailed", t, mapOf("reason" to outcome.reason)))
       }
     }
+  }
+
+  /** Peak reps name the joint that moved. This adds where it is on screen, for effects. */
+  private fun placed(event: EngineEvent): EngineEvent {
+    val joint = (event.payload["joint"] as? String)?.let(::jointNamed)
+    if (!view.isValid || joint == null) return event
+    val i = joint.ordinal
+    return EngineEvent(event.type, event.time, event.payload + mapOf("x" to view.pointX(tracker.x(i)), "y" to view.pointY(tracker.y(i))))
   }
 
   fun startCalibration(duration: Double, t: Double) {

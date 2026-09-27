@@ -42,15 +42,24 @@ export function LifecycleScreen({ onBack }: DemoProps) {
       title="Lifecycle"
       tag="Resources"
       onBack={onBack}
-      camera={mounted ? <BodyVisionView style={StyleSheet.absoluteFill} testInput={input} active={active} /> : null}
+      camera={
+        mounted ? (
+          <BodyVisionView style={StyleSheet.absoluteFill} testInput={input} active={active} />
+        ) : null
+      }
       hud={
         <>
           <Text style={styles.note}>
-            Each cycle pauses, resumes, unmounts and remounts the view. Memory and thread counts should
-            stay flat across cycles.
+            Each cycle pauses, resumes, unmounts and remounts the view. Memory and thread counts
+            should stay flat across cycles.
           </Text>
           <View style={styles.row}>
-            <Metric value={`${cycle}/${CYCLES}`} label="Cycles" tint={running ? color.amber : color.lime} testID="lifecycle-cycles" />
+            <Metric
+              value={`${cycle}/${CYCLES}`}
+              label="Cycles"
+              tint={running ? color.amber : color.lime}
+              testID="lifecycle-cycles"
+            />
           </View>
           <PrimaryButton
             label={running ? 'Running' : `Run ${CYCLES} cycles`}

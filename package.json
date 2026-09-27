@@ -88,6 +88,10 @@
       "types": "./build/setup/index.d.ts",
       "default": "./build/setup/index.js"
     },
+    "./effects": {
+      "types": "./build/effects/index.d.ts",
+      "default": "./build/effects/index.js"
+    },
     "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js"
   },

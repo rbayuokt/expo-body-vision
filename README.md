@@ -31,7 +31,7 @@ detector.
 - **Adaptive performance** that lowers the inference rate when a phone can't keep up or gets hot,
   while the overlay stays at display rate
 - **Video files** run through the same engine without a camera, so you can count reps in a
-  recorded workout or compare models on identical frames
+  recorded workout, compare models on identical frames, or play the clip with the overlay
 - **Portrait and landscape**, front and back camera, mirroring handled for you
 - **Swappable pose backends**. ML Kit and MediaPipe are built in, and you can load your own
   `.task` model file or register your own Swift or Kotlin detector
@@ -674,8 +674,9 @@ import { parseBodySequence } from '@rbayuokt/expo-body-vision';
 This only works in apps built with the plugin's `enableTestInput: true`, which the example
 enables and shipping apps should leave off. The CSV format is the one in `fixtures/`, which
 `scripts/generate-fixtures.js` writes from seeded synthetic motion. They cover clean and noisy
-push-ups, a partial rep, dropped joints, leaving and re-entering the frame, squats, a T-pose
-with a flicker, a hand swinging through a target, NaN spikes, and setup walk-ins.
+push-ups, a partial rep, dropped joints, leaving and re-entering the frame, squats, fast
+punches with overlapping arms, a T-pose with a flicker, a hand swinging through a target, NaN
+spikes, and setup walk-ins.
 
 The same fixtures drive the native test suites. `ios/Core` and the Kotlin `core` package are
 the same engine in Swift and Kotlin. Both replay every fixture and must produce byte-identical
@@ -702,9 +703,10 @@ A few things behave differently per platform.
 
 `example/` has a screen per concept, covering body tracking, guided setup, a custom setup with
 its own UI and steps (T-pose to confirm, an edge glow while measuring, a countdown), rep
-counter, T-pose, target game, custom skeleton, video analysis with a compare-all-models button, a JS-freeze demo (blocks the JS thread for four
-seconds while tracking and counting continue), performance with a model picker, and a
-mount/unmount lifecycle loop. A switch on the home screen swaps the live camera for recorded
+counter, T-pose, target game, custom skeleton, video analysis (live overlay preview, punch
+counting, a compare-all-models button), a JS-freeze demo (blocks the JS thread for four seconds
+while tracking and counting continue), performance with a model picker, and a mount/unmount
+lifecycle loop. A switch on the home screen swaps the live camera for recorded
 input.
 
 ```bash
@@ -718,12 +720,12 @@ npm run ios       # or: npm run android
 How the repository is laid out, for anyone working on the library itself.
 
 ```text
-src/                   TS API: BodyVisionView, rule and preset builders, targets, types
+src/                   TS API: BodyVisionView, analyzeVideo, rule and preset builders, types
 src/setup/             setup session, prompts, speech; BodySetup.tsx is the /setup entry
 ios/Core/              engine in Swift, Foundation only
 android/.../core/      the same engine in Kotlin, plain JVM
-ios/*.swift            camera, backends, replay, pipeline, CAShapeLayer overlay, view
-android/.../*.kt       camera, backends, replay, pipeline, Canvas overlay, view
+ios/*.swift            camera, video, backends, replay, pipeline, CAShapeLayer overlay, view
+android/.../*.kt       camera, video, backends, replay, pipeline, Canvas overlay, view
 ios/Models/            bundled MediaPipe models (Android reads them from here too)
 fixtures/              recorded sequences, golden traces, preset definitions
 maestro/flows/         end-to-end flows on recorded input

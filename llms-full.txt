@@ -1,0 +1,827 @@
+# @rbayuokt/expo-body-vision
+
+> Native body tracking for Expo and React Native: pose rules, rep counting, body-driven targets,
+> guided setup, video file analysis and GPU effects. The camera, the pose model, the rules and the
+> skeleton overlay all run natively. JavaScript describes what to detect and receives events.
+
+This file is written for coding agents (Claude, Codex, Cursor and similar) helping someone build
+with the library. It covers the whole public API, how the pieces fit, recipes, and how to write
+custom effects and shaders that plug straight in. Everything here matches the source in this
+repository. When something is not listed, it does not exist yet: say so instead of guessing.
+
+## 1. Mental model
+
+- JS describes, native executes, the GPU renders. You pass rules as props. The native engine
+  evaluates them on every inference and sends back events (rep counted, pose entered, target hit).
+  Camera frames and per-frame joints never cross into JS unless you opt in with `landmarks`.
+- One body at a time. 33 BlazePose joints (see `JOINTS`).
+- Left and right always mean the person's own left and right, even with the mirrored front camera.
+- Default pose backend: MediaPipe on iOS, ML Kit on Android. MediaPipe is also built in on Android.
+- Events are batched with backpressure. A busy JS thread never slows tracking or counting.
+- Positions in events are view points of the `BodyVisionView`, so overlays placed inside the view
+  line up with them directly.
+
+## 2. Install
+
+Needs an Expo development build (not Expo Go). In a bare React Native app, run
+`npx install-expo-modules@latest` first.
+
+```bash
+npx expo install @rbayuokt/expo-body-vision@latest
+npx expo prebuild
+```
+
+app.json:
+
+```json
+{
+  "expo": {
+    "plugins": [["@rbayuokt/expo-body-vision", { "cameraPermission": "Used to count your reps." }]]
+  }
+}
+```
+
+Plugin options: `cameraPermission` (iOS usage string), `enableTestInput` (lets `testInput` replace
+the camera with recorded frames, for tests and demos, keep it off in shipped apps).
+
+Optional peers, install only what you use:
+
+```bash
+npx expo install @shopify/react-native-skia react-native-reanimated  # <BodySetup /> and all effects
+npx expo install expo-speech                                          # spoken setup prompts
+npx expo install expo-asset                                           # require()'d model or video files
+```
+
+Entry points:
+
+| Import | Contains | Needs |
+| --- | --- | --- |
+| `@rbayuokt/expo-body-vision` | View, rules, presets, events hook, video analysis, permissions | nothing extra |
+| `@rbayuokt/expo-body-vision/setup` | `<BodySetup />` overlay | Skia, Reanimated |
+| `@rbayuokt/expo-body-vision/effects` | Effects, `createImpactEffect`, `useImpactShake` | Skia, Reanimated |
+
+The main entry never imports Skia or Reanimated. Keep it that way in app code too: import effects
+only from `/effects`.
+
+## 3. Quick start
+
+```tsx
+import { BodyVisionView, squat, useCameraPermissions } from '@rbayuokt/expo-body-vision';
+import { useState } from 'react';
+import { Button, Text, View } from 'react-native';
+
+export function SquatCounter() {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [reps, setReps] = useState(0);
+  if (!permission?.granted) return <Button title="Allow camera" onPress={requestPermission} />;
+  return (
+    <View style={{ flex: 1 }}>
+      <BodyVisionView
+        style={{ flex: 1 }}
+        facing="front"
+        rules={[squat()]}
+        onRep={(e) => setReps(e.count)}
+        onRepRejected={(e) => console.log('not counted:', e.reason)}
+      />
+      <Text style={{ fontSize: 48 }}>{reps}</Text>
+    </View>
+  );
+}
+```
+
+## 4. BodyVisionView
+
+Props (all optional):
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `facing` | `'front' \| 'back'` | `front` | |
+| `active` | boolean | true | false stops camera and inference, pauses `video` |
+| `resizeMode` | `'cover' \| 'contain'` | `cover` | |
+| `performance` | `'auto' \| 'performance' \| 'balanced' \| 'accuracy'` | `auto` | fixed modes run 15, 24, 30 inferences/s, `auto` adapts to latency and heat, `accuracy` also picks the larger model |
+| `smoothing` | `'none' \| 'light' \| 'balanced' \| 'stable'` or `{ minCutoff, beta, derivativeCutoff }` | `balanced` | use `none` or `light` for punches and other fast strikes |
+| `prediction` | boolean or `{ enabled, maxMs }` | on, 100 ms | extrapolates joints to display time for the overlay |
+| `tracking` | `{ minJointConfidence, jointHoldMs, lostAfterMs }` | 0.3, 250, 500 | |
+| `rules` | `(RuleDefinition \| TargetDefinition)[]` | none | poses, exercises and targets |
+| `skeleton` | `SkeletonStyle` or `false` | lime skeleton | per-bone and per-joint styles, trails |
+| `landmarks` | boolean or `{ intervalMs }` | off | opt-in joints to JS, throttled natively (100 ms) |
+| `debug` | boolean | false | native stats panel |
+| `backend` | string | platform default | `mlkit`, `mediapipe`, or a name you registered |
+| `model` | `'lite' \| 'full' \| require('x.task') \| { uri }` | `lite` | MediaPipe model file |
+| `experimentalDelegate` | `'cpu' \| 'gpu'` | `cpu` | GPU on Android only |
+| `calibration` | `CalibrationResult \| null` | none | reuse a saved calibration |
+| `readiness` | boolean or `ReadinessOptions` | off | native positioning checks, results in `onReadiness` |
+| `setup` | boolean or `BodySetupOptions` | off | guided setup, see section 7 |
+| `testInput` | `ReplayInput \| null` | none | recorded frames instead of the camera, needs `enableTestInput` |
+| `video` | uri string, `{ uri }` or `require()` | none | plays a file in place of the camera, live overlay and events |
+| `videoLoop` | boolean | false | |
+
+Callbacks: `onCameraReady`, `onBodyDetected`, `onBodyLost`, `onPoseEntered`, `onPoseExited`,
+`onExercisePhase`, `onRep`, `onRepRejected`, `onTargetHit`, `onZoneEntered`, `onZoneExited`,
+`onPerformanceChange`, `onStats` (about once a second), `onLandmarks`, `onReadiness`,
+`onSetupChange`, `onSetupComplete`, `onVideoEnd`, `onError` (a `BodyVisionError` with `.code`).
+
+Key event payloads (every event also has `timestamp` in ms):
+
+- `RepEvent`: `exercise`, `bodyId`, `count`, `durationMs`, and in peak mode `side`
+  (`'left' | 'right'`), `joint`, `x`, `y` (view points of the moving joint when it counted).
+- `RepRejectedEvent`: `exercise`, `reason` (`'incomplete' | 'too-fast' | 'too-slow' | 'form' | 'lost'`).
+- `PoseEnteredEvent`: `pose`, `bodyId`. `PoseExitedEvent` adds `durationMs`.
+- `TargetHitEvent`: `target`, `joint`, `bodyId`, `speed` (view short-sides per second), `x`, `y`
+  (target center in view points).
+- `PerformanceChangeEvent`: `mode`, `inferenceFps`, `reducedEffects`, `thermalLevel`.
+- `ReadinessEvent`: `status` (`'noBody' | 'adjusting' | 'ready'`), `issue`, `mirrored`.
+
+Ref (`useRef<BodyVisionViewRef>()`): `calibrate({ durationMs? })` returns `CalibrationResult`,
+`resetExercise(id?)`, `restartSetup()`.
+
+Children of `BodyVisionView` render over the camera, in the same coordinate space as event
+positions. Put overlays and effects there.
+
+## 5. Rules
+
+### Measurements
+
+```ts
+import { above, angle, distance, inclination } from '@rbayuokt/expo-body-vision';
+
+angle('leftShoulder', 'leftElbow', 'leftWrist');   // interior angle at the middle joint, 0..180 degrees
+inclination('leftShoulder', 'leftWrist');           // segment angle from horizontal, 0..90 degrees
+distance('leftWrist', 'rightWrist');                // in torso lengths (or the calibrated torso length)
+above('leftWrist', 'nose');                          // how far a is above b, torso lengths, negative when below
+```
+
+Chain `.mirrored()` to also measure the swapped side (better tracked side wins in conditions and
+cycle exercises, both sides are watched in peak exercises). Turn a measurement into a condition
+with `.atLeast(n)`, `.atMost(n)` or `.between(min, max)`. Joints under `minConfidence` make a
+condition unknown, not false.
+
+### Poses
+
+```ts
+import { angle, definePose, inclination } from '@rbayuokt/expo-body-vision';
+
+const handsOnHips = definePose({
+  id: 'handsOnHips',
+  holdMs: 400,          // must hold this long before poseEntered (default 300)
+  exitGraceMs: 150,     // may fail this long before poseExited (default 150)
+  when: [
+    angle('leftShoulder', 'leftElbow', 'leftWrist').between(60, 120),
+    angle('rightShoulder', 'rightElbow', 'rightWrist').between(60, 120),
+    inclination('leftShoulder', 'leftHip').atLeast(60),
+  ],
+});
+```
+
+### Exercises
+
+```ts
+import { angle, defineExercise, inclination } from '@rbayuokt/expo-body-vision';
+
+const curl = defineExercise({
+  id: 'curl',
+  metric: angle('leftShoulder', 'leftElbow', 'leftWrist').mirrored(),
+  top: 150,            // metric is large at the top of the movement
+  bottom: 60,          // and small at the bottom
+  hysteresis: 10,      // default 10, in the metric's own units
+  minRepMs: 600,       // faster reps are rejected as 'too-fast' (default 400)
+  maxRepMs: 8000,      // slower ones as 'too-slow'
+  lossGraceMs: 400,    // tracking may drop this long mid-rep
+  minConfidence: 0.5,
+  requires: [inclination('leftShoulder', 'leftHip').mirrored().atLeast(60)], // form checks
+});
+```
+
+Two counting modes:
+
+- `mode: 'cycle'` (default): `top -> descending -> bottom -> ascending -> top` counts a rep. Turning
+  back early, going too fast or too slow, or breaking a `requires` condition emits `onRepRejected`.
+  The metric must be large at the top. Use this for squats, push-ups, curls.
+- `mode: 'peak'`: counts each rise of at least `top - bottom` that reaches `top`, and re-arms after
+  an equal drop. A mirrored metric watches both sides at once, peaks closer than `minRepMs` count
+  once, and each rep carries `side`, `joint`, `x`, `y`. Use this for strikes too fast for a full
+  cycle to be sampled: punches, kicks, claps. No phase events in this mode.
+
+Important: `hysteresis` defaults to 10, which suits degrees. For distance or `above` metrics
+(torso lengths, typically -1.5 to 1.5) set it explicitly, for example `hysteresis: 0.1`, and keep
+`top - hysteresis > bottom + hysteresis`.
+
+### Presets
+
+| Preset | What | Key values |
+| --- | --- | --- |
+| `pushUp()` | cycle on elbow angle, mirrored | top 150, bottom 100, minRepMs 500, body within 40 degrees of horizontal |
+| `squat()` | cycle on knee angle, mirrored | top 160, bottom 100, minRepMs 400, torso at least 35 degrees upright |
+| `punch()` | peak on elbow angle, mirrored | top 110, bottom 80, minRepMs 70, minConfidence 0.2 |
+| `tPose()` | pose | arms within 20 degrees of horizontal, elbows at least 150, hold 500 ms |
+| `armsUp()` | pose | both wrists above the nose, hold 300 ms |
+
+Every preset takes overrides: `squat({ bottom: 90 })`, `tPose({ id: 'start', holdMs: 1000 })`.
+Pushups and squats count best side-on. Punches count best facing the camera with `smoothing="none"`.
+
+### Targets
+
+```ts
+import { defineTarget } from '@rbayuokt/expo-body-vision';
+
+const pad = defineTarget({
+  id: 'pad',
+  x: 0.8, y: 0.3,              // center as fractions of the view
+  radius: 0.07,                // fraction of the view's shorter side
+  colliders: ['leftWrist', 'rightWrist'],
+  minSpeed: 0,                 // view short-sides per second
+  cooldownMs: 800,
+  mode: 'hit',                 // 'zone' fires onZoneEntered and onZoneExited instead
+  style: { hitColor: '#C6FF3D', particles: 16 },
+});
+```
+
+Hits are swept-circle tested between inference frames, so a fast hand still registers. The
+native renderer draws the target and its hit burst. Move a target by changing its `x`, `y`.
+
+## 6. Events inside the view: useBodyVisionEvents
+
+Any component rendered as a child of `BodyVisionView` can listen to every event the callbacks get:
+
+```tsx
+import { useBodyVisionEvents } from '@rbayuokt/expo-body-vision';
+
+function RepLogger() {
+  useBodyVisionEvents((e) => {
+    if (e.type === 'repCompleted') console.log('rep', e.count, e.x, e.y);
+  });
+  return null;
+}
+```
+
+Event `type` values: `cameraReady`, `bodyDetected`, `bodyLost`, `poseEntered`, `poseExited`,
+`exercisePhase`, `repCompleted`, `repRejected`, `targetHit`, `zoneEntered`, `zoneExited`,
+`performanceChanged`, `stats`, `landmarks`, `readiness`, `error`, `videoEnded`. Cast to the typed
+event (`e as unknown as RepEvent`) when you need its fields. The hook only works inside a
+`BodyVisionView`.
+
+## 7. Guided setup
+
+Walks the user into position, optionally checks a pose, measures their proportions and counts
+down, with voice and a built-in overlay or your own UI.
+
+```tsx
+import { BodyVisionView, tPose } from '@rbayuokt/expo-body-vision';
+import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
+
+<BodyVisionView
+  setup={{
+    framing: 'fullBody',                      // 'upperBody' | 'floor' (floor wants landscape)
+    voice: true,                              // expo-speech, or speak={(text) => ...}
+    steps: ['position', { pose: tPose(), prompt: 'Arms out to confirm' }, 'calibrate', { countdown: 3 }],
+    prompts: { tooClose: 'Take a step back' },
+  }}
+  onSetupComplete={(calibration) => save(calibration)}>
+  <BodySetup accentColor="#C6FF3D" topInset={100} bottomInset={220} />
+</BodyVisionView>
+```
+
+For a fully custom look, skip `<BodySetup />` and render from `useBodySetup()` inside the view
+(`state.phase`, `state.prompt`, `state.progress`, `state.screenDirection`, `text`, `restart()`).
+Pass a saved `calibration` prop later to skip measuring.
+
+## 8. Video files
+
+Analyze every frame of a clip, off the JS thread:
+
+```ts
+import { analyzeVideo, squat } from '@rbayuokt/expo-body-vision';
+
+const result = await analyzeVideo(uri, { rules: [squat()], fps: 30, landmarks: false });
+const reps = result.events.filter((e) => e.type === 'repCompleted').length;
+// result: durationMs, width, height, framesAnalyzed, sourceFps, backend, delegate, averageInferenceMs, events, landmarks?
+```
+
+Or play a clip with the live overlay and all callbacks, in place of the camera:
+
+```tsx
+<BodyVisionView video={uri} videoLoop rules={[punch()]} smoothing="none" onRep={(e) => setCount(e.count)} />
+```
+
+Sources: file or content URI (what `expo-image-picker` returns), a path, or `require('./clip.mp4')`
+(needs expo-asset). Portrait phone videos are rotated upright. Android remuxes fragmented MP4s
+(common from social apps) before reading. `analyzeVideo` is exhaustive, the `video` prop keeps
+pace with playback and may skip frames on slow phones.
+
+## 9. Effects (`@rbayuokt/expo-body-vision/effects`)
+
+GPU effects as children of `BodyVisionView`. Each listens to the view's events, draws with a Skia
+runtime shader and animates on the UI thread with Reanimated.
+
+| Component | Fires on | Look |
+| --- | --- | --- |
+| `<ImpactEffect look="anime" />` | peak reps with a position, target hits | speed lines, jagged ink starburst, POW! |
+| `look="lightning"` | same | flickering bolts, ZAP! |
+| `look="fire"` | same | flame burst with embers, FWOOSH! |
+| `look="pixel"` | same | 8-bit pixel ring, rising +1 |
+| `look="shatter"` | same | glass cracks and falling shards, CRACK! |
+| `look="jojo"` | same | JoJo style purple burst, gold screentone, ink outline, dark speed lines, ORA! |
+| `<RepEffect />` | every rep and rejection | count slams in, GOOD! or PERFECT!, red crack with the reason |
+| `<RepEffect look="levelUp" every={5} />` | every N reps | golden ring sweep, LEVEL 2 |
+| `<ComboFever from={5} />` | reps chained within `gapMs` | edge flames that grow, x10 COMBO |
+| `<PoseAura poses={['tpose']} />` | while a pose holds | energy aura, grows with hold time |
+| `<SetupConfetti />` | setup done, or `trigger` changing | confetti, READY! |
+
+```tsx
+import { BodyVisionView, punch, squat } from '@rbayuokt/expo-body-vision';
+import { ComboFever, ImpactEffect, RepEffect, useImpactShake } from '@rbayuokt/expo-body-vision/effects';
+import Animated from 'react-native-reanimated';
+
+export function Arena() {
+  const shake = useImpactShake();
+  return (
+    <Animated.View style={[{ flex: 1 }, shake.style]}>
+      <BodyVisionView style={{ flex: 1 }} rules={[punch(), squat()]} smoothing="none">
+        <ImpactEffect look="lightning" onImpact={shake.shake} />
+        <RepEffect exercises={['squat']} />
+        <ComboFever from={5} />
+      </BodyVisionView>
+    </Animated.View>
+  );
+}
+```
+
+Props:
+
+- `ImpactEffect`: `look`, `on` (`'reps' | 'hits' | 'both'`), `sources` (exercise or target ids),
+  `colors` (`{ left, right }`), `words` (array or `false`), `wordStyle`, `size` (radius, default
+  120), `durationMs`, `speedLines`, `flash`, `ring`, `onImpact(impact)`, `level`.
+- `RepEffect`: `look` (`'slam' | 'levelUp'`), `exercises`, `every`, `perfectAfter` (default 3),
+  `labels` (`good`, `perfect` and each rejection reason, `''` to stay quiet), `levelLabel`,
+  `colors` (`good`, `perfect`, `rejected`, `level`), `showCount`, `textStyle`, `size`,
+  `durationMs`, `onPlay`, `level`.
+- `ComboFever`: `from`, `full`, `gapMs` (default 900), `exercises`, `color`, `banner` (function or
+  `false`), `bannerStyle`, `onCombo`, `level`.
+- `PoseAura`: `poses`, `growMs` (default 3000), `color`, `level`.
+- `SetupConfetti`: `colors` (five), `label` (or `false`), `labelStyle`, `durationMs`, `trigger`, `level`.
+- `useImpactShake(strength = 9)`: `{ style, shake }`. Put `style` on an `Animated.View` around the
+  `BodyVisionView`.
+
+Levels (every effect): `minimal` (hits drawn in a small box, no words or extra layers, at most two
+at a time, other effects show text only), `balanced` (three hits, drawn near the hit, words and
+speed lines, no flash), `max` (everything over the whole view), `auto` (default, balanced and
+dropping to minimal while `performance="auto"` reports `reducedEffects`). Explicit layer props
+(`speedLines`, `flash`, `ring`, `words`) override the level. Suggest `level="minimal"` when a user
+reports lag on a low-end phone.
+
+Where hits land: an `ImpactEffect` needs a position. Peak-mode reps (`punch()` or any
+`mode: 'peak'` exercise) and target hits carry one. Cycle-mode reps (squats, push-ups) do not, use
+`RepEffect` for those.
+
+## 10. Custom effects
+
+Three levels of control, pick the lowest one that does the job.
+
+### 10a. Restyle a built-in
+
+```tsx
+<ImpactEffect look="anime" words={['JAB!', 'CROSS!']} colors={{ left: '#FFC23D', right: '#FF6B4A' }} size={90} speedLines={false} />
+```
+
+### 10b. createImpactEffect: your own shader, the library does the rest
+
+```ts
+import { createImpactEffect } from '@rbayuokt/expo-body-vision/effects';
+
+const Ripple = createImpactEffect({
+  shader: RIPPLE_SKSL,                 // see the contract below
+  words: ['SPLASH!'],                  // or false
+  colors: { left: '#3DD6FF', right: '#3DD6FF' },
+  size: 120,
+  durationMs: 600,
+  risingWords: false,                  // true floats words up like a score pickup
+});
+
+// Use it exactly like ImpactEffect (same props, except `look`):
+<Ripple on="reps" sources={['punch']} level="balanced" />
+```
+
+Call `createImpactEffect` once at module scope, never inside a component body: it compiles the
+shader. A shader that fails to compile throws `BodyVisionError('INVALID_CONFIG')`.
+
+Shader contract. SkSL with `half4 main(float2 p)` where `p` is the pixel in view points. Declare
+only the uniforms you use, any subset of:
+
+| Uniform | Type | Value |
+| --- | --- | --- |
+| `center` | `float2` | where the hit landed, view points |
+| `progress` | `float` | 0 at the hit to 1 at the end, eased out |
+| `radius` | `float` | the `size` prop |
+| `tint` | `float3` | side color, 0..1 per channel |
+| `seed` | `float` | random 0..1 per hit, use it to vary shapes |
+| `useLines` | `float` | 1 or 0, from `speedLines` or the level |
+| `useFlash` | `float` | 1 or 0, from `flash` or the level |
+| `useRing` | `float` | 1 or 0, from `ring` or the level |
+
+Rules for writing SkSL that works here:
+
+- Return premultiplied color: `return half4(half3(color * alpha), half(alpha));`. Returning an
+  un-premultiplied color makes edges glow white or look dirty.
+- Fade to alpha 0 by `progress` 1. The effect is removed at the end, anything still visible pops.
+- Use float literals (`1.0`, not `1`) and fixed-count loops (`for (int i = 0; i < 8; i++)`).
+- `out`, `in`, `inout` are reserved words, don't use them as variable names.
+- There is no texture of the camera. Effects draw over it and cannot warp or sample the video.
+- Everything outside the drawing box is clipped: at `balanced` the box is about 2.6 x `radius`
+  around the hit, at `minimal` 1.35 x. Keep the core of the effect within `radius` so it survives
+  cheaper levels. Full-view parts like speed lines only show at `max`.
+- Cost is per pixel per frame. Prefer a few `smoothstep` and `length` calls over deep noise, keep
+  loops short, and let `useLines` and friends switch off expensive layers.
+- Hash helper that varies per hit:
+  `float hash(float n) { return fract(sin(n * 127.1 + seed * 311.7) * 43758.5453); }`
+
+Example shaders that compile and follow the contract:
+
+```glsl
+// RIPPLE: a double ring that expands and fades.
+uniform float2 center;
+uniform float progress;
+uniform float radius;
+uniform float3 tint;
+
+half4 main(float2 p) {
+  float d = length(p - center);
+  float fade = 1.0 - progress;
+  float r1 = radius * progress;
+  float r2 = radius * progress * 0.6;
+  float ring = smoothstep(5.0, 0.0, abs(d - r1)) + 0.6 * smoothstep(4.0, 0.0, abs(d - r2));
+  float a = clamp(ring * fade, 0.0, 1.0);
+  return half4(half3(tint * a), half(a));
+}
+```
+
+```glsl
+// HEART_BURST: small hearts fly out from the hit and fade.
+uniform float2 center;
+uniform float progress;
+uniform float radius;
+uniform float3 tint;
+uniform float seed;
+
+float hash(float n) { return fract(sin(n * 127.1 + seed * 311.7) * 43758.5453); }
+
+// 1 inside the heart curve (x^2 + y^2 - 1)^3 - x^2 y^3 < 0, soft at the edge. y points up.
+float heart(float2 q) {
+  q.y = -q.y * 1.1 + 0.25;
+  float r = q.x * q.x + q.y * q.y - 1.0;
+  float f = r * r * r - q.x * q.x * q.y * q.y * q.y;
+  return smoothstep(0.05, -0.05, f);
+}
+
+half4 main(float2 p) {
+  float a = 0.0;
+  for (int i = 0; i < 8; i++) {
+    float fi = float(i);
+    float ang = (fi + hash(fi) * 0.5) / 8.0 * 6.2831853;
+    float dist = radius * progress * (0.6 + 0.6 * hash(fi + 3.0));
+    float2 pos = center + float2(cos(ang), sin(ang)) * dist;
+    float s = radius * 0.12 * (1.0 - progress * 0.5);
+    a = max(a, heart((p - pos) / s));
+  }
+  a *= 1.0 - progress;
+  return half4(half3(tint * a), half(a));
+}
+```
+
+```glsl
+// SLASH: a bright diagonal cut through the hit that opens and fades, with a flash.
+uniform float2 center;
+uniform float progress;
+uniform float radius;
+uniform float3 tint;
+uniform float seed;
+uniform float useFlash;
+
+half4 main(float2 p) {
+  float2 v = p - center;
+  float ang = 0.6 + seed * 1.8;
+  float2 dir = float2(cos(ang), sin(ang));
+  float along = dot(v, dir);
+  float across = dot(v, float2(-dir.y, dir.x));
+  float len = radius * 1.6 * smoothstep(0.0, 0.25, progress);
+  float width = mix(10.0, 1.0, progress);
+  float cut = smoothstep(width, 0.0, abs(across)) * step(abs(along), len);
+  float fade = 1.0 - smoothstep(0.4, 1.0, progress);
+  float flash = useFlash * (1.0 - smoothstep(0.0, 0.1, progress)) * 0.2 * step(length(v), radius * 2.0);
+  float a = clamp(cut * fade + flash, 0.0, 1.0);
+  float3 c = mix(tint, float3(1.0), cut * 0.7);
+  return half4(half3(c * a), half(a));
+}
+```
+
+Wire one up:
+
+```ts
+const Slash = createImpactEffect({ shader: SLASH_SKSL, words: ['SLASH!'], durationMs: 450 });
+```
+
+Check a shader before running the app: Skia's web build (`canvaskit-wasm`, installed with
+`@shopify/react-native-skia`) compiles the same SkSL in Node.
+
+```js
+const CanvasKitInit = require('canvaskit-wasm/bin/canvaskit.js');
+CanvasKitInit().then((CK) => {
+  let error = '';
+  const effect = CK.RuntimeEffect.Make(source, (e) => (error = e));
+  console.log(effect ? 'ok' : error);
+});
+```
+
+This repository runs that check for every built-in shader in `src/__tests__/shaders.test.ts`.
+
+### 10c. Fully custom: useBodyVisionEvents plus Skia or Reanimated
+
+For effects that are not a hit (a HUD pulse, a screen tint while a pose holds, particle trails),
+listen to events and draw whatever you like. This one flashes the screen edge red on a rejected
+rep and green on a counted one:
+
+```tsx
+import { useBodyVisionEvents, type RepEvent } from '@rbayuokt/expo-body-vision';
+import { StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+
+export function RepGlow() {
+  const good = useSharedValue(0);
+  const bad = useSharedValue(0);
+  useBodyVisionEvents((e) => {
+    if (e.type === 'repCompleted') good.set(withSequence(withTiming(1, { duration: 80 }), withTiming(0, { duration: 500 })));
+    if (e.type === 'repRejected') bad.set(withSequence(withTiming(1, { duration: 80 }), withTiming(0, { duration: 700 })));
+  });
+  const goodStyle = useAnimatedStyle(() => ({ opacity: good.value }));
+  const badStyle = useAnimatedStyle(() => ({ opacity: bad.value }));
+  return (
+    <>
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.edge, { borderColor: '#C6FF3D' }, goodStyle]} />
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.edge, { borderColor: '#FF4A4A' }, badStyle]} />
+    </>
+  );
+}
+
+const styles = StyleSheet.create({ edge: { borderWidth: 10 } });
+
+// <BodyVisionView rules={[squat()]}><RepGlow /></BodyVisionView>
+```
+
+For shader-based custom effects outside the hit contract, use Skia directly: `Skia.RuntimeEffect.Make`
+once at module scope, a `<Canvas style={StyleSheet.absoluteFill} pointerEvents="none">`, a `<Rect>`
+with `<Shader source={effect} uniforms={derived} />`, and Reanimated shared values for time and
+progress (`useDerivedValue`, `useClock` from Skia). Mount the canvas only while the effect is
+visible, an idle full-view shader still costs every frame.
+
+Do not stream `landmarks` to JS to place per-frame effects. Positions already arrive on the events
+that matter (peak reps, target hits). If an effect truly needs a joint every frame, it belongs in
+native code.
+
+## 11. Custom pose backends (native)
+
+Register your own detector and select it by name. Swift:
+
+```swift
+import ExpoBodyVision
+
+final class MyBackend: BodyVisionPoseBackend {
+  let delegateName = "cpu"
+  func detect(_ buffer: CMSampleBuffer, timestampMs: Int, into result: BodyVisionPoseResult) throws {
+    // upright, unmirrored 32BGRA buffer, report normalized 0..1 coordinates
+    result.setJoint("leftWrist", x: 0.4, y: 0.6, confidence: 0.9)
+  }
+}
+BodyVisionBackends.register("my-model") { options in MyBackend() }
+```
+
+Kotlin:
+
+```kotlin
+class MyBackend : BodyVisionPoseBackend {
+  override val delegateName = "cpu"
+  override fun detect(frame: BodyVisionFrame, timestampMs: Long, result: BodyVisionPoseResult) {
+    // frame.bitmap() is unrotated: report coordinates in it (the library rotates them by
+    // frame.rotationDegrees) or set result.upright = true if your SDK returns upright ones
+    result.setJoint("leftWrist", 0.4, 0.6, confidence = 0.9)
+  }
+  override fun close() {}
+}
+BodyVisionBackends.register("my-model") { options -> MyBackend() }
+```
+
+Then `<BodyVisionView backend="my-model" />`. `getCapabilities().backends` lists what is
+registered. The same backend serves `analyzeVideo`. A custom `.task` MediaPipe model needs no
+native code: `model={require('./pose_landmarker_heavy.task')}` with `task` added to Metro's
+`assetExts`.
+
+## 12. Testing without a camera
+
+```tsx
+import { BodyVisionView, parseBodySequence, pushUp } from '@rbayuokt/expo-body-vision';
+
+<BodyVisionView testInput={parseBodySequence(csv, { loop: false })} rules={[pushUp()]} onRep={onRep} />
+```
+
+Requires the plugin's `enableTestInput: true`. The CSV format is the one in the repo's
+`fixtures/`. For a real person on video use `analyzeVideo` or the `video` prop instead.
+
+## 13. Errors
+
+`onError` and rejected promises carry `BodyVisionError` with a stable `code`:
+`CAMERA_PERMISSION_DENIED`, `CAMERA_UNAVAILABLE`, `CAMERA_INTERRUPTED`, `MODEL_LOAD_FAILED`,
+`INFERENCE_FAILED`, `GPU_UNAVAILABLE`, `INVALID_CONFIG`, `INVALID_RULE` (with `.path`, for example
+`rules[1].conditions[0].joints`), `TEST_INPUT_DISABLED`, `VIDEO_READ_FAILED`, `CALIBRATION_FAILED`,
+`NOT_MOUNTED`, `UNSUPPORTED_PLATFORM`. Rules are validated in JS where they are written and again
+natively.
+
+## 14. Recipes
+
+### Boxing trainer with jab and cross counts and effects
+
+```tsx
+import { BodyVisionView, punch, type RepEvent } from '@rbayuokt/expo-body-vision';
+import { ComboFever, ImpactEffect, useImpactShake } from '@rbayuokt/expo-body-vision/effects';
+import { useState } from 'react';
+import Animated from 'react-native-reanimated';
+
+export function Boxing() {
+  const shake = useImpactShake();
+  const [jabs, setJabs] = useState(0);
+  const [crosses, setCrosses] = useState(0);
+  const onRep = (e: RepEvent) => (e.side === 'left' ? setJabs((n) => n + 1) : setCrosses((n) => n + 1));
+  return (
+    <Animated.View style={[{ flex: 1 }, shake.style]}>
+      <BodyVisionView style={{ flex: 1 }} rules={[punch()]} smoothing="none" onRep={onRep}>
+        <ImpactEffect look="anime" onImpact={shake.shake} />
+        <ComboFever from={5} />
+      </BodyVisionView>
+    </Animated.View>
+  );
+}
+```
+
+Jab is the left hand for an orthodox stance and the right for southpaw. Ten punches in one second
+at 30 fps is past what motion-blurred frames show, normal pace counts well.
+
+### Jumping jacks (a custom cycle exercise on an `above` metric)
+
+```ts
+import { above, defineExercise } from '@rbayuokt/expo-body-vision';
+
+const jumpingJack = defineExercise({
+  id: 'jumpingJack',
+  metric: above('leftWrist', 'nose').mirrored(), // arms up: positive, arms down: about -1
+  top: 0.1,
+  bottom: -0.6,
+  hysteresis: 0.1,  // torso lengths, not the degree default
+  minRepMs: 400,
+});
+```
+
+### JoJo's Bizarre Adventure style rush (custom effect)
+
+This look is built in, `<ImpactEffect look="jojo" />` gives it to you with no shader code. The
+recipe shows the same look made with `createImpactEffect`, as a template for variants (other
+colors, other words, another screentone): a jagged purple burst with gold manga screentone, an
+ink outline, dark speed lines, ORA! words and an ORA ORA ORA combo banner.
+
+```glsl
+uniform float2 center;
+uniform float progress;
+uniform float radius;
+uniform float3 tint;
+uniform float seed;
+uniform float useLines;
+
+float hash(float n) { return fract(sin(n * 127.1 + seed * 311.7) * 43758.5453); }
+
+half4 main(float2 p) {
+  float2 v = p - center;
+  float d = length(v);
+  float a01 = atan(v.y, v.x) / 6.2831853 + 0.5;
+  float pop = smoothstep(0.0, 0.12, progress);
+  float fade = 1.0 - smoothstep(0.45, 1.0, progress);
+
+  // Jagged burst with long uneven spikes.
+  float k = a01 * 16.0;
+  float spike = 1.0 - abs(fract(k) * 2.0 - 1.0);
+  float starR = radius * (0.4 + 0.75 * spike * mix(0.35, 1.0, hash(floor(k)))) * pop;
+  float inside = smoothstep(starR, starR - 2.0, d);
+  float ink = smoothstep(starR + 7.0, starR + 4.0, d) - inside;
+
+  // Manga screentone: dots that grow toward the center of the burst.
+  float cell = 7.0;
+  float2 g = fract(p / cell) - 0.5;
+  float dotR = mix(0.12, 0.48, 1.0 - clamp(d / (starR + 1.0), 0.0, 1.0));
+  float tone = smoothstep(dotR + 0.06, dotR - 0.06, length(g));
+  float3 gold = float3(1.0, 0.82, 0.24);
+  float3 fill = mix(tint, gold, tone);
+  fill = mix(fill, float3(1.0), smoothstep(radius * 0.25, 0.0, d));
+
+  // Dark dramatic speed lines around the hit.
+  float lk = a01 * 90.0;
+  float on = step(0.45, hash(floor(lk) + 40.0));
+  float line = on * smoothstep(0.35, 0.0, abs(fract(lk) - 0.5));
+  float from = radius * (1.1 + 0.9 * hash(floor(lk) + 9.0));
+  float lines = useLines * line * smoothstep(from, from + 60.0, d) * smoothstep(radius * 3.2, radius * 2.2, d)
+              * (1.0 - smoothstep(0.0, 0.55, progress)) * 0.85;
+
+  float3 c = float3(0.12, 0.02, 0.18) * lines;
+  float a = lines;
+  c = mix(c, float3(0.02), ink * fade); a = max(a, ink * fade);
+  c = mix(c, fill, inside * fade); a = max(a, inside * fade);
+  return half4(half3(c * a), half(a));
+}
+```
+
+```tsx
+import { BodyVisionView, punch } from '@rbayuokt/expo-body-vision';
+import { ComboFever, createImpactEffect, useImpactShake } from '@rbayuokt/expo-body-vision/effects';
+import Animated from 'react-native-reanimated';
+
+const JOJO_SKSL = `...the shader above...`;
+
+const JojoEffect = createImpactEffect({
+  shader: JOJO_SKSL,
+  words: ['ORA!', 'ORA ORA!', 'ドドド'],
+  colors: { left: '#B14CFF', right: '#B14CFF' },
+  size: 110,
+  durationMs: 520,
+});
+
+const oraBanner = (combo: number) => Array(Math.min(combo, 4)).fill('ORA').join(' ') + '!';
+
+export function OraRush() {
+  const shake = useImpactShake();
+  return (
+    <Animated.View style={[{ flex: 1 }, shake.style]}>
+      <BodyVisionView style={{ flex: 1 }} rules={[punch()]} smoothing="none">
+        <JojoEffect onImpact={shake.shake} />
+        <ComboFever from={5} color="#B14CFF" banner={oraBanner} />
+      </BodyVisionView>
+    </Animated.View>
+  );
+}
+```
+
+### Squat coach with feedback effects
+
+```tsx
+import { BodyVisionView, squat } from '@rbayuokt/expo-body-vision';
+import { RepEffect } from '@rbayuokt/expo-body-vision/effects';
+
+<BodyVisionView rules={[squat()]}>
+  <RepEffect labels={{ incomplete: 'GO DEEPER', 'too-fast': 'SLOW DOWN' }} />
+  <RepEffect look="levelUp" every={10} levelLabel={(n) => `SET ${n}`} />
+</BodyVisionView>
+```
+
+### Reaction game with targets
+
+```tsx
+import { BodyVisionView, defineTarget } from '@rbayuokt/expo-body-vision';
+import { ImpactEffect } from '@rbayuokt/expo-body-vision/effects';
+import { useState } from 'react';
+
+const SPOTS = [[0.2, 0.3], [0.8, 0.3], [0.5, 0.2]];
+
+export function Reaction() {
+  const [i, setI] = useState(0);
+  const [x, y] = SPOTS[i];
+  return (
+    <BodyVisionView
+      style={{ flex: 1 }}
+      rules={[defineTarget({ id: 'pad', x, y, radius: 0.08, cooldownMs: 300 })]}
+      onTargetHit={() => setI((n) => (n + 1) % SPOTS.length)}>
+      <ImpactEffect look="shatter" on="hits" />
+    </BodyVisionView>
+  );
+}
+```
+
+### Count reps in an uploaded video
+
+```ts
+import { analyzeVideo, pushUp } from '@rbayuokt/expo-body-vision';
+import * as ImagePicker from 'expo-image-picker';
+
+const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['videos'] });
+if (!picked.canceled) {
+  const result = await analyzeVideo(picked.assets[0].uri, { rules: [pushUp()] });
+  const counted = result.events.filter((e) => e.type === 'repCompleted').length;
+  const rejected = result.events.filter((e) => e.type === 'repRejected');
+}
+```
+
+## 15. Advice for agents
+
+- Start from presets and only write custom rules when a preset can't be tuned with overrides.
+- Put effects and overlays inside `BodyVisionView`. Hooks like `useBodyVisionEvents` and
+  `useBodySetup` return nothing outside it.
+- Fast movements: `smoothing="none"` (or `light`) and `mode: 'peak'`.
+- Distance and `above` metrics: always set `hysteresis` in torso units.
+- Left and right are the person's, not the screen's.
+- Effects need a dev build with Skia and Reanimated installed. Import them only from `/effects`.
+- Use Reanimated for animation, not React Native's `Animated`.
+- Performance numbers depend on the phone. Suggest `level="minimal"` and `performance="auto"`
+  for low-end devices instead of promising a frame rate.
+- Test logic without a camera through `testInput` recordings or `analyzeVideo` on a real clip.

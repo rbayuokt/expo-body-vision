@@ -11,7 +11,7 @@ import {
 
 import { useBodyVisionEvents } from '../events';
 import type { RepEvent, TargetHitEvent } from '../types';
-import { ANIME, FIRE, LIGHTNING, PIXEL, SHATTER } from './shaders';
+import { ANIME, FIRE, JOJO, LIGHTNING, PIXEL, SHATTER } from './shaders';
 import {
   compile,
   rgb,
@@ -287,7 +287,7 @@ export function createImpactEffect(options: ImpactEffectOptions): ComponentType<
   return Effect;
 }
 
-export type ImpactLook = 'anime' | 'lightning' | 'fire' | 'pixel' | 'shatter';
+export type ImpactLook = 'anime' | 'lightning' | 'fire' | 'pixel' | 'shatter' | 'jojo';
 
 const LOOKS: Record<ImpactLook, ComponentType<ImpactEffectProps>> = {
   anime: createImpactEffect({
@@ -320,6 +320,13 @@ const LOOKS: Record<ImpactLook, ComponentType<ImpactEffectProps>> = {
     words: ['CRACK!', 'SMASH!'],
     colors: { left: '#CFF4FF', right: '#FFE3F5' },
     durationMs: 800,
+  }),
+  jojo: createImpactEffect({
+    shader: JOJO,
+    words: ['ORA!', 'ORA ORA!', 'ドドド'],
+    colors: { left: '#B14CFF', right: '#B14CFF' },
+    size: 110,
+    durationMs: 520,
   }),
 };
 

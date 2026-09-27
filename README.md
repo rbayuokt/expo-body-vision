@@ -32,9 +32,9 @@ detector.
   while the overlay stays at display rate
 - **Video files** run through the same engine without a camera, so you can count reps in a
   recorded workout, compare models on identical frames, or play the clip with the overlay
-- **Effects** for hits, reps, combos, held poses and setup: anime, lightning, fire, pixel and
-  shatter hits, rep slams, level ups, combo fever, an aura and confetti, all configurable, or
-  your own shader through `createImpactEffect`
+- **Effects** for hits, reps, combos, held poses and setup: anime, lightning, fire, pixel,
+  shatter and JoJo hits, rep slams, level ups, combo fever, an aura and confetti, all
+  configurable, or your own shader through `createImpactEffect`
 - **Portrait and landscape**, front and back camera, mirroring handled for you
 - **Swappable pose backends**. ML Kit and MediaPipe are built in, and you can load your own
   `.task` model file or register your own Swift or Kotlin detector
@@ -70,7 +70,7 @@ Reanimated and expo-speech are optional peers that the main entry never imports.
 ## Install
 
 ```bash
-npx expo install @rbayuokt/expo-body-vision
+npx expo install @rbayuokt/expo-body-vision@latest
 npx expo prebuild
 ```
 
@@ -86,15 +86,48 @@ The config plugin sets `NSCameraUsageDescription` on iOS and declares `CAMERA` o
 needs a development build, since Expo Go doesn't ship the native module. In a bare React Native
 app, run `npx install-expo-modules@latest` first.
 
-The guided setup overlay and spoken prompts use optional peers. Install them only if you use
-them.
+The guided setup overlay, the effects and spoken prompts use optional peers. Install them only if
+you use them.
 
 ```bash
-npx expo install @shopify/react-native-skia react-native-reanimated  # <BodySetup /> overlay
+npx expo install @shopify/react-native-skia react-native-reanimated  # <BodySetup /> and /effects
 npx expo install expo-speech                                          # voice prompts
 ```
 
+## No time to read the docs?
+
+Let your coding agent read them for you. [llms-full.txt](llms-full.txt) holds the whole API, the
+recipes and the shader contract for custom effects in one file written for Claude, Codex, Cursor
+and the like. It ships inside the package, so after installing it's already on disk.
+
+Point the agent at the file and describe what you want.
+
+```text
+Read node_modules/@rbayuokt/expo-body-vision/llms-full.txt, then build a squat
+counter screen with the front camera. Show the count big, say GOOD! on a full
+rep and HALF REP when it's not counted.
+```
+
+```text
+Using llms-full.txt from @rbayuokt/expo-body-vision, make a boxing screen that
+counts jabs and crosses separately, uses the lightning impact effect, shakes the
+screen on every hit and drops to the minimal effect level on slow phones.
+```
+
+```text
+Using llms-full.txt from @rbayuokt/expo-body-vision, give my boxing screen the
+JoJo's Bizarre Adventure look (ImpactEffect look="jojo") and show ORA ORA ORA
+through ComboFever once a combo starts. Then write a createImpactEffect variant
+of it in red and black with ゴゴゴ words for my rival's side. Keep it inside the
+radius so it still looks right at the balanced level, and check the shader
+compiles with canvaskit-wasm first.
+```
+
+Agents that can't read local files can use the copy on GitHub,
+`https://raw.githubusercontent.com/rbayuokt/expo-body-vision/main/llms-full.txt`.
+
 ## Documentation
+
 
 - [Your first screen](#your-first-screen)
 - [How it works](#how-it-works)
@@ -497,6 +530,7 @@ const shake = useImpactShake();
 | `ImpactEffect look="fire"` | Same | A flame burst with rising embers, FWOOSH! |
 | `ImpactEffect look="pixel"` | Same | 8-bit pixel ring, a +1 floats up |
 | `ImpactEffect look="shatter"` | Same | Glass cracks, then shards fall away, CRACK! |
+| `ImpactEffect look="jojo"` | Same | JoJo style, purple burst with gold manga screentone and an ink outline, ORA! |
 | `RepEffect` | Every rep and rejection | The count slams in with GOOD! or PERFECT!, a rejected rep cracks red with the reason |
 | `RepEffect look="levelUp"` | Every `every` reps | A golden ring sweeps round with sparkles, LEVEL 2 |
 | `ComboFever` | Reps chained into a combo | Flames lick in from the edges and grow, x10 COMBO |

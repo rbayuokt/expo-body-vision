@@ -228,6 +228,48 @@ half4 main(float2 p) {
 }
 `;
 
+// JoJo's Bizarre Adventure style: a jagged burst with gold manga screentone, a heavy ink
+// outline and dark speed lines. useLines switches the speed lines.
+export const JOJO = `${HIT_UNIFORMS}${HASH}
+half4 main(float2 p) {
+  float2 v = p - center;
+  float d = length(v);
+  float a01 = atan(v.y, v.x) / 6.2831853 + 0.5;
+  float pop = smoothstep(0.0, 0.12, progress);
+  float fade = 1.0 - smoothstep(0.45, 1.0, progress);
+
+  // Jagged burst with long uneven spikes.
+  float k = a01 * 16.0;
+  float spike = 1.0 - abs(fract(k) * 2.0 - 1.0);
+  float starR = radius * (0.4 + 0.75 * spike * mix(0.35, 1.0, hash(floor(k)))) * pop;
+  float inside = smoothstep(starR, starR - 2.0, d);
+  float ink = smoothstep(starR + 7.0, starR + 4.0, d) - inside;
+
+  // Manga screentone: dots that grow toward the center of the burst.
+  float cell = 7.0;
+  float2 g = fract(p / cell) - 0.5;
+  float dotR = mix(0.12, 0.48, 1.0 - clamp(d / (starR + 1.0), 0.0, 1.0));
+  float tone = smoothstep(dotR + 0.06, dotR - 0.06, length(g));
+  float3 gold = float3(1.0, 0.82, 0.24);
+  float3 fill = mix(tint, gold, tone);
+  fill = mix(fill, float3(1.0), smoothstep(radius * 0.25, 0.0, d));
+
+  // Dark dramatic speed lines around the hit.
+  float lk = a01 * 90.0;
+  float on = step(0.45, hash(floor(lk) + 40.0));
+  float line = on * smoothstep(0.35, 0.0, abs(fract(lk) - 0.5));
+  float from = radius * (1.1 + 0.9 * hash(floor(lk) + 9.0));
+  float lines = useLines * line * smoothstep(from, from + 60.0, d) * smoothstep(radius * 3.2, radius * 2.2, d)
+              * (1.0 - smoothstep(0.0, 0.55, progress)) * 0.85;
+
+  float3 c = float3(0.12, 0.02, 0.18) * lines;
+  float a = lines;
+  c = mix(c, float3(0.02), ink * fade); a = max(a, ink * fade);
+  c = mix(c, fill, inside * fade); a = max(a, inside * fade);
+  return half4(half3(c * a), half(a));
+}
+`;
+
 // Rep slam: a shockwave and burst rays from the middle of the view.
 export const SLAM = `${HIT_UNIFORMS}${HASH}
 half4 main(float2 p) {

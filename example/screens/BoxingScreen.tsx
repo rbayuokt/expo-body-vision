@@ -26,9 +26,10 @@ const RULES = [punch()];
 // Punches closer than this in time are one combo.
 const COMBO_GAP_MS = 900;
 const PACE_WINDOW_MS = 10000;
+const oraBanner = (combo: number) => Array(Math.min(combo, 4)).fill('ORA').join(' ') + '!';
 
 type Source = 'camera' | 'video';
-type Look = 'anime' | 'lightning' | 'fire' | 'pixel' | 'shatter' | 'clean' | 'off';
+type Look = 'anime' | 'lightning' | 'fire' | 'pixel' | 'shatter' | 'jojo' | 'clean' | 'off';
 
 export function BoxingScreen({ onBack }: DemoProps) {
   const input = useDemoInput('punches', true);
@@ -126,7 +127,14 @@ export function BoxingScreen({ onBack }: DemoProps) {
                 colors={{ left: color.amber, right: color.coral }}
               />
             ) : null}
-            {look !== 'off' ? <ComboFever from={5} level={level} /> : null}
+            {look !== 'off' ? (
+              <ComboFever
+                from={5}
+                level={level}
+                color={look === 'jojo' ? '#B14CFF' : undefined}
+                banner={look === 'jojo' ? oraBanner : undefined}
+              />
+            ) : null}
           </BodyVisionView>
         </Animated.View>
       }
@@ -140,13 +148,16 @@ export function BoxingScreen({ onBack }: DemoProps) {
             testIDPrefix="boxing-source"
           />
           <Choice
-            options={['anime', 'lightning', 'fire', 'pixel', 'shatter', 'clean', 'off'] as const}
+            options={
+              ['anime', 'lightning', 'fire', 'pixel', 'shatter', 'jojo', 'clean', 'off'] as const
+            }
             labels={{
               anime: 'Anime',
               lightning: 'Lightning',
               fire: 'Fire',
               pixel: 'Pixel',
               shatter: 'Shatter',
+              jojo: 'JoJo',
               clean: 'Clean',
               off: 'No effect',
             }}

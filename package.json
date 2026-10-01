@@ -1,6 +1,6 @@
 {
   "name": "@rbayuokt/expo-body-vision",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Native body tracking, pose rules, exercise counting and body interaction for React Native and Expo. Camera, inference, tracking and rendering run natively.",
   "main": "build/index.js",
   "types": "build/index.d.ts",

@@ -8,6 +8,8 @@ protocol CameraSourceDelegate: AnyObject {
   func cameraDidDropFrame(_ camera: CameraSource)
   /// Any queue.
   func camera(_ camera: CameraSource, didFail code: BodyVisionErrorCode, message: String)
+  /// Session queue, whenever the input changes.
+  func camera(_ camera: CameraSource, hasTorch: Bool)
 }
 
 /**
@@ -25,6 +27,7 @@ final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
 
   // Session queue.
   private var front = true
+  private var torch = false
   private var wanted = false
   private var visible = false
   private var inBackground = false
@@ -49,6 +52,14 @@ final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
       self.wanted = running
       self.front = front
       self.reconcile()
+    }
+  }
+
+  func update(torch: Bool) {
+    sessionQueue.async { [weak self] in
+      guard let self = self, self.torch != torch else { return }
+      self.torch = torch
+      self.applyTorch()
     }
   }
 
@@ -98,6 +109,16 @@ final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
     if !session.isRunning {
       session.startRunning()
     }
+    // The torch only stays on while the session runs, so it goes again after every start.
+    applyTorch()
+  }
+
+  private func applyTorch() {
+    guard let device = input?.device, device.hasTorch, session.isRunning else { return }
+    let mode: AVCaptureDevice.TorchMode = torch ? .on : .off
+    guard device.torchMode != mode, device.isTorchModeSupported(mode), (try? device.lockForConfiguration()) != nil else { return }
+    device.torchMode = mode
+    device.unlockForConfiguration()
   }
 
   private func stop() {
@@ -127,6 +148,7 @@ final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
       }
       session.addInput(newInput)
       input = newInput
+      delegate?.camera(self, hasTorch: device.hasTorch)
     }
     if session.canSetSessionPreset(.hd1280x720) {
       session.sessionPreset = .hd1280x720
@@ -151,26 +173,29 @@ final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate
 
   private func orientConnections() {
     if let connection = videoOutput.connection(with: .video) {
-      Self.rotate(connection, to: orientation)
+      Self.rotate(connection, to: orientation, front: front)
       if connection.isVideoMirroringSupported {
         connection.automaticallyAdjustsVideoMirroring = false
         connection.isVideoMirrored = false
       }
     }
     let orientation = self.orientation
+    let front = self.front
     DispatchQueue.main.async { [weak previewLayer] in
       if let connection = previewLayer?.connection {
-        Self.rotate(connection, to: orientation)
+        Self.rotate(connection, to: orientation, front: front)
       }
     }
   }
 
-  static func rotate(_ connection: AVCaptureConnection, to orientation: UIInterfaceOrientation) {
+  static func rotate(_ connection: AVCaptureConnection, to orientation: UIInterfaceOrientation, front: Bool) {
     if #available(iOS 17.0, *) {
+      // Angles are sensor-relative and the front sensor is flipped in landscape. With the back
+      // camera's angles the front image came out upside down (iPhone 11 Pro).
       let angle: CGFloat
       switch orientation {
-      case .landscapeRight: angle = 0
-      case .landscapeLeft: angle = 180
+      case .landscapeRight: angle = front ? 180 : 0
+      case .landscapeLeft: angle = front ? 0 : 180
       case .portraitUpsideDown: angle = 270
       default: angle = 90
       }

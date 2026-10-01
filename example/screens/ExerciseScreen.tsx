@@ -5,73 +5,65 @@ import {
   type BodyVisionViewRef,
   type ExercisePhase,
   type RepRejectionReason,
+  useRepStats,
 } from '@rbayuokt/expo-body-vision';
 import { RepEffect } from '@rbayuokt/expo-body-vision/effects';
 import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
 import { useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { DemoProps } from '../App';
+import { CameraButtons } from '../components/CameraButtons';
 import { DemoFrame, useHudInset } from '../components/DemoFrame';
+import { FloatingStats } from '../components/FloatingStats';
 import { PhaseTrack } from '../components/PhaseTrack';
-import { Choice, GhostButton, Metric, Readout } from '../components/ui';
+import { StatusPill } from '../components/StatusPill';
+import { Segmented, Stat } from '../components/ui';
 import { color } from '../theme';
 import { useDemoInput } from './shared/input';
 
+type Exercise = 'pushup' | 'squat';
+
 const EXERCISES = { pushup: [pushUp()], squat: [squat()] };
 const FIXTURE = { pushup: 'pushup-partial-noisy', squat: 'squat-clean' };
+const OPTIONS: { id: Exercise; label: string }[] = [
+  { id: 'pushup', label: 'Push-up' },
+  { id: 'squat', label: 'Squat' },
+];
 const REASON: Record<RepRejectionReason, string> = {
-  incomplete: 'incomplete',
-  'too-fast': 'too fast',
-  'too-slow': 'too slow',
-  form: 'form',
-  lost: 'lost track',
+  incomplete: 'Half rep, go deeper',
+  'too-fast': 'Too fast, slow down',
+  'too-slow': 'Too slow',
+  form: 'Check your form',
+  lost: 'Lost track of you',
 };
 
+type Status = { tone: 'idle' | 'good' | 'miss'; text: string };
+const IDLE: Status = { tone: 'idle', text: 'Start when ready' };
+
 export function ExerciseScreen({ onBack }: DemoProps) {
-  const [exercise, setExercise] = useState<keyof typeof EXERCISES>('pushup');
+  const [exercise, setExercise] = useState<Exercise>('pushup');
   const input = useDemoInput(FIXTURE[exercise]);
   const view = useRef<BodyVisionViewRef>(null);
-  // Live camera: position and calibrate first, count after. Recorded input starts counting at once.
+  // Live camera: setup first, and the library holds the rules until it's done. Recorded input
+  // skips setup and counts at once.
   const [ready, setReady] = useState(false);
   const counting = input !== null || ready;
-  const [count, setCount] = useState(0);
+  const { stats, track, reset } = useRepStats();
   const [phase, setPhase] = useState<ExercisePhase>('ready');
-  const [rejected, setRejected] = useState('-');
+  const [status, setStatus] = useState<Status>(IDLE);
 
-  const switchTo = (next: keyof typeof EXERCISES) => {
-    setExercise(next);
-    setCount(0);
+  const clear = () => {
+    reset();
     setPhase('ready');
-    setRejected('-');
-    setReady(false);
+    setStatus(IDLE);
   };
 
-  const counters = (
-    <>
-      <View style={styles.row}>
-        <Metric value={`${count}`} label="Reps" size={88} tint={color.lime} testID="rep-count" />
-        <View style={styles.side}>
-          <Readout label="Phase" value={phase} testID="rep-phase" />
-          <Readout
-            label="Not counted"
-            value={rejected}
-            tint={rejected === '-' ? color.muted : color.coral}
-            testID="rep-rejected"
-          />
-        </View>
-      </View>
-      <PhaseTrack phase={phase} />
-      <GhostButton
-        label="Reset count"
-        onPress={() => {
-          view.current?.resetExercise();
-          setCount(0);
-        }}
-        testID="rep-reset"
-      />
-    </>
-  );
+  const switchTo = (next: Exercise) => {
+    setExercise(next);
+    setReady(false);
+    clear();
+  };
 
   return (
     <DemoFrame
@@ -84,32 +76,79 @@ export function ExerciseScreen({ onBack }: DemoProps) {
           key={exercise}
           style={StyleSheet.absoluteFill}
           testInput={input}
-          rules={counting ? EXERCISES[exercise] : []}
+          rules={EXERCISES[exercise]}
           setup={
-            input === null && !ready
-              ? { framing: exercise === 'pushup' ? 'floor' : 'fullBody', voice: true }
+            input === null
+              ? {
+                  framing: exercise === 'pushup' ? 'floor' : 'fullBody',
+                  voice: true,
+                  startRules: 'afterSetup',
+                }
               : false
           }
           onSetupComplete={() => setReady(true)}
-          onRep={(e) => setCount(e.count)}
+          onRep={(e) => {
+            track.onRep(e);
+            setStatus({ tone: 'good', text: 'Good rep' });
+          }}
           onExercisePhase={(e) => setPhase(e.phase)}
-          onRepRejected={(e) => setRejected(REASON[e.reason])}>
+          onRepRejected={(e) => {
+            track.onRepRejected(e);
+            setStatus({ tone: 'miss', text: REASON[e.reason] });
+          }}>
           <SetupOverlay />
-          {counting ? <RepEffect /> : null}
+          {/* The panel already shows the count, so the effects only say how the rep went. */}
+          {counting ? <RepEffect showCount={false} /> : null}
           {counting ? <RepEffect look="levelUp" every={5} /> : null}
+          {counting ? (
+            <StatusPill
+              text={status.text}
+              dot={
+                status.tone === 'good'
+                  ? color.lime
+                  : status.tone === 'miss'
+                    ? color.coral
+                    : color.muted
+              }
+              testID="rep-status"
+            />
+          ) : null}
+          <CameraButtons />
+          <FloatingStats />
         </BodyVisionView>
       }
       hud={
         <>
-          <Choice
-            options={['pushup', 'squat'] as const}
-            labels={{ pushup: 'Push-up', squat: 'Squat' }}
+          <Segmented
+            options={OPTIONS}
             value={exercise}
             onChange={switchTo}
             testIDPrefix="exercise"
           />
           {counting ? (
-            counters
+            <>
+              <View style={styles.stats}>
+                <Stat value={stats.count} label="Reps" tint={color.lime} testID="rep-count" />
+                <Stat
+                  value={stats.missed}
+                  label="Not counted"
+                  tint={color.coral}
+                  testID="rep-rejected"
+                />
+                <Stat value={stats.streak} label="Streak" tint={color.amber} />
+              </View>
+              <PhaseTrack phase={phase} />
+              <Pressable
+                onPress={() => {
+                  view.current?.resetExercise();
+                  clear();
+                }}
+                accessibilityRole="button"
+                testID="rep-reset"
+                style={({ pressed }) => [styles.reset, pressed && styles.pressed]}>
+                <Text style={styles.resetText}>↺ Reset</Text>
+              </Pressable>
+            </>
           ) : (
             <Text style={styles.note}>
               {exercise === 'pushup'
@@ -123,14 +162,23 @@ export function ExerciseScreen({ onBack }: DemoProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  note: { color: color.muted, fontSize: 14, lineHeight: 20 },
-  row: { flexDirection: 'row', alignItems: 'flex-end', gap: 24 },
-  side: { flex: 1, gap: 12, paddingBottom: 8 },
-});
-
 /** Rendered inside the camera, so it can read the frame's HUD inset. */
 function SetupOverlay() {
   const inset = useHudInset();
   return <BodySetup accentColor={color.lime} topInset={inset.top} bottomInset={inset.bottom} />;
 }
+
+const styles = StyleSheet.create({
+  stats: { flexDirection: 'row' },
+  note: { color: color.muted, fontSize: 14, lineHeight: 20 },
+  reset: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 999,
+    backgroundColor: color.raised,
+    borderWidth: 1,
+    borderColor: color.hairline,
+  },
+  resetText: { color: color.text, fontSize: 14, fontWeight: '700' },
+  pressed: { opacity: 0.6 },
+});

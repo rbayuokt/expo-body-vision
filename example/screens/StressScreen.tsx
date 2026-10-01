@@ -3,7 +3,9 @@ import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { DemoProps } from '../App';
+import { CameraButtons } from '../components/CameraButtons';
 import { DemoFrame } from '../components/DemoFrame';
+import { FloatingStats } from '../components/FloatingStats';
 import { Metric, PrimaryButton, Readout } from '../components/ui';
 import { color } from '../theme';
 import { useDemoInput } from './shared/input';
@@ -51,8 +53,10 @@ export function StressScreen({ onBack }: DemoProps) {
             ],
           }}
           onRep={(e) => setReps(e.count)}
-          onStats={onStats}
-        />
+          onStats={onStats}>
+          <CameraButtons />
+          <FloatingStats />
+        </BodyVisionView>
       }
       hud={
         <>

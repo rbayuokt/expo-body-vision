@@ -255,7 +255,76 @@ function benchmarkChart() {
   return svg(W, H, body);
 }
 
+// Every run in the README's "Measured on real phones" tables, in the order they were run.
+const RUNS = [
+  {
+    phone: 'iPhone 11 Pro',
+    note: 'charging, thermal state serious',
+    rows: [
+      ['MediaPipe Lite', 'auto', 26, 109, 15],
+      ['Apple Vision', 'auto', 25, 122, 10],
+    ],
+  },
+  {
+    phone: 'OPPO CPH2217, Helio P90 (2019)',
+    note: 'charging, 30.8 to 39.2 °C, later runs warmer',
+    rows: [
+      ['MediaPipe Lite', 'auto', 103, 173, 9],
+      ['MediaPipe Full', 'auto', 132, 216, 8],
+      ['MediaPipe Heavy', 'auto', 489, 708, 2],
+      ['ML Kit', 'auto', 77, 152, 9],
+      ['ML Kit', 'balanced', 67, 117, 15],
+      ['MediaPipe Lite', 'balanced', 203, 292, 5],
+    ],
+  },
+];
+
+function measuredRuns() {
+  const W = 1400;
+  const rowH = 64;
+  const rows = RUNS.reduce((n, g) => n + g.rows.length, 0);
+  const H = 250 + rows * rowH + RUNS.length * 60;
+  const x0 = 330;
+  const x1 = 1170;
+  const max = 720;
+  const X = (ms) => x0 + ((x1 - x0) * ms) / max;
+
+  let body = header('MEASURED ON REAL PHONES', 'Every run, side by side', 'Release builds of the example app, read from onStats. Shorter bars are better. The overlay held 60 fps in every run.');
+  // Legend.
+  body += `\n  <rect x="30" y="128" width="16" height="16" rx="4" fill="${C.lime}"/>`;
+  body += `\n  <text x="54" y="141" fill="${C.text}" font-size="14">Time per pose</text>`;
+  body += `\n  <rect x="190" y="128" width="16" height="16" rx="4" fill="${C.violet}" fill-opacity="0.7"/>`;
+  body += `\n  <text x="214" y="141" fill="${C.text}" font-size="14">Capture to display</text>`;
+  body += `\n  <text x="${W - 30}" y="141" text-anchor="end" fill="${C.muted}" font-size="14">poses per second</text>`;
+  let y = 170;
+  const top = y;
+  for (const group of RUNS) {
+    body += `\n  <text x="30" y="${y + 22}" fill="${C.text}" font-size="16" font-weight="800">${group.phone}</text>`;
+    body += `\n  <text x="${W - 30}" y="${y + 22}" text-anchor="end" fill="${C.faint}" font-size="13">${group.note}</text>`;
+    y += 42;
+    for (const [backend, mode, pose, latency, rate] of group.rows) {
+      body += `\n  <text x="${x0 - 16}" y="${y + 20}" text-anchor="end" fill="${C.text}" font-size="15" font-weight="700">${backend}</text>`;
+      body += `\n  <text x="${x0 - 16}" y="${y + 40}" text-anchor="end" fill="${C.muted}" font-size="13">${mode}</text>`;
+      body += `\n  <rect x="${x0}" y="${y + 4}" width="${Math.max(4, X(pose) - x0)}" height="20" rx="6" fill="${C.lime}"/>`;
+      body += `\n  <text x="${X(pose) + 10}" y="${y + 19}" fill="${C.text}" font-size="14" font-weight="800">${pose} ms</text>`;
+      body += `\n  <rect x="${x0}" y="${y + 28}" width="${X(latency) - x0}" height="20" rx="6" fill="${C.violet}" fill-opacity="0.7"/>`;
+      body += `\n  <text x="${X(latency) + 10}" y="${y + 43}" fill="${C.muted}" font-size="14" font-weight="700">${latency} ms</text>`;
+      body += `\n  <rect x="${W - 96}" y="${y + 10}" width="66" height="30" rx="15" fill="${C.card}" stroke="${C.hairline}"/>`;
+      body += `\n  <text x="${W - 63}" y="${y + 31}" text-anchor="middle" fill="${rate >= 15 ? C.lime : rate >= 8 ? C.amber : C.coral}" font-size="15" font-weight="800">${rate}/s</text>`;
+      y += rowH;
+    }
+    y += 18;
+  }
+  const bottom = y - 10;
+  for (let ms = 0; ms <= max; ms += 120) {
+    body += `\n  <line x1="${X(ms)}" x2="${X(ms)}" y1="${top}" y2="${bottom}" stroke="${C.text}" stroke-opacity="0.06"/>`;
+    body += `\n  <text x="${X(ms)}" y="${bottom + 24}" text-anchor="middle" fill="${C.faint}" font-size="12">${ms} ms</text>`;
+  }
+  return svg(W, H, body);
+}
+
 fs.writeFileSync(path.join(DOCS, 'joint-map.svg'), jointMap());
+fs.writeFileSync(path.join(DOCS, 'measured-runs.svg'), measuredRuns());
 fs.writeFileSync(path.join(DOCS, 'benchmarks.svg'), benchmarkChart());
 fs.writeFileSync(path.join(DOCS, 'rep-cycle.svg'), repCycle());
 

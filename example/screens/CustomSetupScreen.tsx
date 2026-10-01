@@ -10,7 +10,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut, ZoomIn } from 'react-native-reanimated';
 
 import type { DemoProps } from '../App';
+import { CameraButtons } from '../components/CameraButtons';
 import { DemoFrame } from '../components/DemoFrame';
+import { FloatingStats } from '../components/FloatingStats';
 import { GlowBorder } from '../components/GlowBorder';
 import { GhostButton, Label } from '../components/ui';
 import { color, space } from '../theme';
@@ -63,11 +65,13 @@ export function CustomSetupScreen({ onBack }: DemoProps) {
             jointColor: measuring ? color.cyan : color.lime,
           }}
           setup={{ steps: STEPS, voice: true, prompts: PROMPTS }}
-          onSetupChange={(s) => {
+          onSetupChange={(s, prompt) => {
             setState(s);
-            setText(s.text ?? PROMPTS[s.prompt as keyof typeof PROMPTS] ?? '');
-          }}
-        />
+            setText(prompt);
+          }}>
+          <CameraButtons />
+          <FloatingStats />
+        </BodyVisionView>
       }
       overlay={
         phase === 'countdown' && state?.countdown ? (

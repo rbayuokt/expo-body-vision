@@ -36,6 +36,7 @@ final class BodyPipeline: CameraSourceDelegate {
 
   // Lock.
   private var cameraReadyPending = true
+  private var hasTorch = false
   private var backendName = "mediapipe"
   private var modelSpec: String?
   private var activeBackend = (name: "mediapipe", delegate: "cpu")
@@ -143,7 +144,7 @@ final class BodyPipeline: CameraSourceDelegate {
       }
       replay = source
       source.start()
-      locked { engine.events.push(EngineEvent("cameraReady", CACurrentMediaTime(), ["width": 0, "height": 0, "backend": "replay", "delegate": "none"])) }
+      locked { engine.events.push(EngineEvent("cameraReady", CACurrentMediaTime(), ["width": 0, "height": 0, "backend": "replay", "delegate": "none", "hasTorch": false])) }
       return
     }
     camera.update(running: true, front: front)
@@ -168,11 +169,15 @@ final class BodyPipeline: CameraSourceDelegate {
   // MARK: - Frames
 
   func camera(_ camera: CameraSource, didOutput buffer: CMSampleBuffer) {
-    process(buffer)
+    process(buffer, hasTorch: locked { hasTorch })
+  }
+
+  func camera(_ camera: CameraSource, hasTorch: Bool) {
+    locked { self.hasTorch = hasTorch }
   }
 
   /// Video queue, for camera and video frames alike.
-  private func process(_ buffer: CMSampleBuffer) {
+  private func process(_ buffer: CMSampleBuffer, hasTorch: Bool = false) {
     let now = CACurrentMediaTime()
     let (fps, request, readyPending) = locked { () -> (Double, BackendRequest, Bool) in
       stats.cameraFrames += 1
@@ -191,7 +196,7 @@ final class BodyPipeline: CameraSourceDelegate {
     }
     guard let backend = backend(for: request) else { return }
     if readyPending {
-      locked { engine.events.push(EngineEvent("cameraReady", now, ["width": width, "height": height, "backend": request.name, "delegate": backend.delegateName])) }
+      locked { engine.events.push(EngineEvent("cameraReady", now, ["width": width, "height": height, "backend": request.name, "delegate": backend.delegateName, "hasTorch": hasTorch])) }
     }
     lastInferenceStart = now
 

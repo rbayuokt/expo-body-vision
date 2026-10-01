@@ -219,6 +219,8 @@ export interface CameraReadyEvent extends BodyEventBase {
   height: number;
   backend: string;
   delegate: string;
+  /** The camera has a torch. False for video and test input. */
+  hasTorch: boolean;
 }
 
 export interface BodyVisionErrorEvent extends BodyEventBase {

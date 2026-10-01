@@ -46,6 +46,7 @@ class ExpoBodyVisionModule : Module() {
 
       Prop("facing") { view: BodyVisionView, facing: String -> view.facing = facing }
       Prop("active") { view: BodyVisionView, active: Boolean -> view.active = active }
+      Prop("torch") { view: BodyVisionView, torch: Boolean -> view.torch = torch }
       Prop("resizeMode") { view: BodyVisionView, mode: String -> view.resizeMode = mode }
       Prop("config") { view: BodyVisionView, config: Map<String, Any?> -> view.config = config }
       Prop("skeleton") { view: BodyVisionView, skeleton: Map<String, Any?> -> view.skeleton = skeleton }

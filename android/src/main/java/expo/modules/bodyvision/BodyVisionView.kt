@@ -22,6 +22,7 @@ class BodyVisionView(context: Context, appContext: AppContext) : ExpoView(contex
 
   var facing = "front"
   var active = true
+  var torch = false
   var resizeMode = "cover"
   var config: Map<String, Any?> = emptyMap()
   var skeleton: Map<String, Any?> = emptyMap()
@@ -41,7 +42,7 @@ class BodyVisionView(context: Context, appContext: AppContext) : ExpoView(contex
   private val overlay = OverlayView(context, pipeline::renderFrame, ::deliver).apply {
     layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
   }
-  private val camera = CameraSource(context, previewView, analysisExecutor, pipeline::analyze, pipeline::pushError)
+  private val camera = CameraSource(context, previewView, analysisExecutor, pipeline::analyze, pipeline::pushError, pipeline::setTorchAvailable)
   private val player = VideoPlayerSource(context, analysisExecutor, pipeline::analyze, pipeline::pushVideoEnded, pipeline::pushError)
 
   private var attached = false
@@ -95,6 +96,7 @@ class BodyVisionView(context: Context, appContext: AppContext) : ExpoView(contex
     }
     updateViewTransform()
     updateRunning()
+    camera.setTorch(torch)
   }
 
   fun acknowledge(sequence: Int) = pipeline.acknowledge(sequence)

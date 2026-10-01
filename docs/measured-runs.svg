@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="882" viewBox="0 0 1400 882" font-family="Inter, 'SF Pro Display', Helvetica, Arial, sans-serif">
+  <rect width="1400" height="882" fill="#0B0D0C"/>
+  <text x="30" y="46" fill="#C6FF3D" font-size="13" font-weight="700" letter-spacing="3">MEASURED ON REAL PHONES</text>
+  <text x="30" y="80" fill="#F4F7F2" font-size="26" font-weight="800" letter-spacing="-0.5">Every run, side by side</text>
+  <text x="30" y="106" fill="#8C968F" font-size="15">Release builds of the example app, read from onStats. Shorter bars are better. The overlay held 60 fps in every run.</text>
+  <rect x="30" y="128" width="16" height="16" rx="4" fill="#C6FF3D"/>
+  <text x="54" y="141" fill="#F4F7F2" font-size="14">Time per pose</text>
+  <rect x="190" y="128" width="16" height="16" rx="4" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="214" y="141" fill="#F4F7F2" font-size="14">Capture to display</text>
+  <text x="1370" y="141" text-anchor="end" fill="#8C968F" font-size="14">poses per second</text>
+  <text x="30" y="192" fill="#F4F7F2" font-size="16" font-weight="800">iPhone 11 Pro</text>
+  <text x="1370" y="192" text-anchor="end" fill="#4A524D" font-size="13">charging, thermal state serious</text>
+  <text x="314" y="232" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">MediaPipe Lite</text>
+  <text x="314" y="252" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="216" width="30.333333333333314" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="370.3333333333333" y="231" fill="#F4F7F2" font-size="14" font-weight="800">26 ms</text>
+  <rect x="330" y="240" width="127.16666666666669" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="467.1666666666667" y="255" fill="#8C968F" font-size="14" font-weight="700">109 ms</text>
+  <rect x="1304" y="222" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="243" text-anchor="middle" fill="#C6FF3D" font-size="15" font-weight="800">15/s</text>
+  <text x="314" y="296" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">Apple Vision</text>
+  <text x="314" y="316" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="280" width="29.166666666666686" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="369.1666666666667" y="295" fill="#F4F7F2" font-size="14" font-weight="800">25 ms</text>
+  <rect x="330" y="304" width="142.33333333333337" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="482.33333333333337" y="319" fill="#8C968F" font-size="14" font-weight="700">122 ms</text>
+  <rect x="1304" y="286" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="307" text-anchor="middle" fill="#FFC23D" font-size="15" font-weight="800">10/s</text>
+  <text x="30" y="380" fill="#F4F7F2" font-size="16" font-weight="800">OPPO CPH2217, Helio P90 (2019)</text>
+  <text x="1370" y="380" text-anchor="end" fill="#4A524D" font-size="13">charging, 30.8 to 39.2 °C, later runs warmer</text>
+  <text x="314" y="420" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">MediaPipe Lite</text>
+  <text x="314" y="440" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="404" width="120.16666666666669" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="460.1666666666667" y="419" fill="#F4F7F2" font-size="14" font-weight="800">103 ms</text>
+  <rect x="330" y="428" width="201.83333333333337" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="541.8333333333334" y="443" fill="#8C968F" font-size="14" font-weight="700">173 ms</text>
+  <rect x="1304" y="410" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="431" text-anchor="middle" fill="#FFC23D" font-size="15" font-weight="800">9/s</text>
+  <text x="314" y="484" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">MediaPipe Full</text>
+  <text x="314" y="504" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="468" width="154" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="494" y="483" fill="#F4F7F2" font-size="14" font-weight="800">132 ms</text>
+  <rect x="330" y="492" width="252" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="592" y="507" fill="#8C968F" font-size="14" font-weight="700">216 ms</text>
+  <rect x="1304" y="474" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="495" text-anchor="middle" fill="#FFC23D" font-size="15" font-weight="800">8/s</text>
+  <text x="314" y="548" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">MediaPipe Heavy</text>
+  <text x="314" y="568" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="532" width="570.5" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="910.5" y="547" fill="#F4F7F2" font-size="14" font-weight="800">489 ms</text>
+  <rect x="330" y="556" width="826" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="1166" y="571" fill="#8C968F" font-size="14" font-weight="700">708 ms</text>
+  <rect x="1304" y="538" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="559" text-anchor="middle" fill="#FF6B4A" font-size="15" font-weight="800">2/s</text>
+  <text x="314" y="612" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">ML Kit</text>
+  <text x="314" y="632" text-anchor="end" fill="#8C968F" font-size="13">auto</text>
+  <rect x="330" y="596" width="89.83333333333331" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="429.8333333333333" y="611" fill="#F4F7F2" font-size="14" font-weight="800">77 ms</text>
+  <rect x="330" y="620" width="177.33333333333337" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="517.3333333333334" y="635" fill="#8C968F" font-size="14" font-weight="700">152 ms</text>
+  <rect x="1304" y="602" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="623" text-anchor="middle" fill="#FFC23D" font-size="15" font-weight="800">9/s</text>
+  <text x="314" y="676" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">ML Kit</text>
+  <text x="314" y="696" text-anchor="end" fill="#8C968F" font-size="13">balanced</text>
+  <rect x="330" y="660" width="78.16666666666669" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="418.1666666666667" y="675" fill="#F4F7F2" font-size="14" font-weight="800">67 ms</text>
+  <rect x="330" y="684" width="136.5" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="476.5" y="699" fill="#8C968F" font-size="14" font-weight="700">117 ms</text>
+  <rect x="1304" y="666" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="687" text-anchor="middle" fill="#C6FF3D" font-size="15" font-weight="800">15/s</text>
+  <text x="314" y="740" text-anchor="end" fill="#F4F7F2" font-size="15" font-weight="700">MediaPipe Lite</text>
+  <text x="314" y="760" text-anchor="end" fill="#8C968F" font-size="13">balanced</text>
+  <rect x="330" y="724" width="236.83333333333337" height="20" rx="6" fill="#C6FF3D"/>
+  <text x="576.8333333333334" y="739" fill="#F4F7F2" font-size="14" font-weight="800">203 ms</text>
+  <rect x="330" y="748" width="340.66666666666674" height="20" rx="6" fill="#8B5CFF" fill-opacity="0.7"/>
+  <text x="680.6666666666667" y="763" fill="#8C968F" font-size="14" font-weight="700">292 ms</text>
+  <rect x="1304" y="730" width="66" height="30" rx="15" fill="#1A1F1C" stroke="rgba(255,255,255,0.10)"/>
+  <text x="1337" y="751" text-anchor="middle" fill="#FF6B4A" font-size="15" font-weight="800">5/s</text>
+  <line x1="330" x2="330" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="330" y="816" text-anchor="middle" fill="#4A524D" font-size="12">0 ms</text>
+  <line x1="470" x2="470" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="470" y="816" text-anchor="middle" fill="#4A524D" font-size="12">120 ms</text>
+  <line x1="610" x2="610" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="610" y="816" text-anchor="middle" fill="#4A524D" font-size="12">240 ms</text>
+  <line x1="750" x2="750" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="750" y="816" text-anchor="middle" fill="#4A524D" font-size="12">360 ms</text>
+  <line x1="890" x2="890" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="890" y="816" text-anchor="middle" fill="#4A524D" font-size="12">480 ms</text>
+  <line x1="1030" x2="1030" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="1030" y="816" text-anchor="middle" fill="#4A524D" font-size="12">600 ms</text>
+  <line x1="1170" x2="1170" y1="170" y2="792" stroke="#F4F7F2" stroke-opacity="0.06"/>
+  <text x="1170" y="816" text-anchor="middle" fill="#4A524D" font-size="12">720 ms</text>
+</svg>

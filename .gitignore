@@ -54,7 +54,7 @@ yarn-debug.log
 yarn-error.log
 
 # Expo
-.expo/*
+.expo/
 
 # Tarballs from `npm pack`
 *.tgz
@@ -68,3 +68,5 @@ example/android
 example/ios
 
 example/assets/models/*.task
+
+docs/expo-body-vision-demo.mp4

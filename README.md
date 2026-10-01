@@ -5,13 +5,16 @@
 # expo-body-vision
 
 <p align="center">
-  <img src="docs/expo-body-vision-demo.gif" alt="The example app running side by side on an OPPO with a MediaTek Helio P90 and on an iPhone 11 Pro: live skeleton with the fps card open, guided and custom setup, the boxing unlock, punch effects with combos, and push-ups and squats in landscape and portrait." width="480" />
+  <img src="docs/expo-body-vision-demo.gif" width="49%" alt="The example app running side by side on an OPPO with a MediaTek Helio P90 and on an iPhone 11 Pro: live skeleton with the fps card open, guided and custom setup, the boxing unlock, punch effects with combos, and push-ups and squats in landscape and portrait." />
+  <img src="docs/video-analysis.gif" alt="A boxing clip played as the input on the Android emulator and the iOS simulator side by side. The skeleton follows the boxer, punches are counted per hand with combos, and the fire, lightning and JoJo hit effects play on each punch." width="49%" />
+  <br />
+  <sub><b>Left:</b> live camera on an OPPO (Helio P90) and an iPhone 11 Pro. <b>Right:</b> a recorded boxing clip as the input, on the Android emulator and the iOS simulator.</sub>
 </p>
 
 <p align="center">
   <a href="https://drive.google.com/file/d/1GeauqR8CniEURJ31pNrtW5lPRuGbFpOm/view?usp=sharing">Full-size video</a> · <a href="#benchmarks">Benchmarks on real phones</a>
   <br />
-  <sub>The GIF and the video play at 1.3x speed to keep them short.</sub>
+  <sub>The live camera demo plays at 1.3x speed to keep it short.</sub>
 </p>
 
 Body tracking for React Native and Expo, fully native on iOS and Android. The camera, the pose
@@ -54,6 +57,9 @@ Almost every part can be swapped or extended:
   drawn with Skia, plus your own shaders. `/setup` brings a ready-made guided setup. The main
   package doesn't pull in Skia or Reanimated unless you import them. See [Effects](#effects),
   [Your own effect](#your-own-effect) and [Guided setup](#guided-setup).
+- **Video analysis.** Run any recorded clip through the same engine: count reps in a workout
+  video, compare pose models on identical frames, or play it back with the skeleton, counts and
+  effects live, no camera needed. See [Analyzing a video file](#analyzing-a-video-file).
 - **Inputs.** Live front or back camera with a flash toggle, a video file, or recorded body frames
   for tests. See [Camera switch and flash](#camera-switch-and-flash),
   [Analyzing a video file](#analyzing-a-video-file) and
@@ -83,8 +89,9 @@ joints are predicted forward to the display between poses. On an iPhone 11 Pro a
   your own text-to-speech
 - **Adaptive performance** that lowers the inference rate when a phone can't keep up or gets hot,
   while the overlay stays at display rate
-- **Video files** run through the same engine without a camera, so you can count reps in a
-  recorded workout, compare models on identical frames, or play the clip with the overlay
+- **Video analysis**: recorded clips run through the same engine without a camera, so you can
+  count reps in a recorded workout, compare models on identical frames, or play the clip with the
+  overlay and effects
 - **Effects** for hits, reps, combos, held poses and setup: anime, lightning, fire, pixel,
   shatter and JoJo hits, rep slams, level ups, combo fever, an aura and confetti, all
   configurable, or your own shader through `createImpactEffect`

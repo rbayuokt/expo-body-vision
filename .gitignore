@@ -70,3 +70,5 @@ example/ios
 example/assets/models/*.task
 
 docs/expo-body-vision-demo.mp4
+
+docs/video-analysis.mp4

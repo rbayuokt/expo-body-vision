@@ -21,4 +21,4 @@ tags:
     timeout: 15000
 - assertVisible:
     id: rep-rejected
-    text: "incomplete"
+    text: "1"

@@ -1,6 +1,13 @@
 import { Canvas, Rect, Shader, useClock, type SkRuntimeEffect } from '@shopify/react-native-skia';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, type StyleProp, type TextStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  type DimensionValue,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -15,9 +22,17 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useBodyVisionEvents } from '../events';
+import { addRep, EMPTY_REP_STATS } from '../stats';
 import type { PoseEnteredEvent, RepEvent } from '../types';
 import { AURA, FEVER } from './shaders';
-import { compile, rgb, useEffectLevel, useLayoutSize, type EffectLevel } from './shared';
+import {
+  compile,
+  uniformNames,
+  rgb,
+  useEffectLevel,
+  useLayoutSize,
+  type EffectLevel,
+} from './shared';
 
 let feverEffect: SkRuntimeEffect | null = null;
 let auraEffect: SkRuntimeEffect | null = null;
@@ -41,13 +56,20 @@ function Glow({
 }) {
   const clock = useClock();
   const tint = rgb(color);
-  const uniforms = useDerivedValue(() => ({
-    size: [width, height],
-    time: clock.value / 1000,
-    intensity: intensity.value,
-    tint,
-    seed: 0.42,
-  }));
+  const names = uniformNames(effect);
+  const uniforms = useDerivedValue(() => {
+    const all: Record<string, number | number[]> = {
+      size: [width, height],
+      time: clock.value / 1000,
+      intensity: intensity.value,
+      tint,
+      seed: 0.42,
+      top: height * from,
+    };
+    const out: Record<string, number | number[]> = {};
+    for (const n of names) out[n] = all[n];
+    return out;
+  });
   return (
     <Rect x={0} y={height * from} width={width} height={height * (1 - from)}>
       <Shader source={effect} uniforms={uniforms} />
@@ -69,6 +91,8 @@ export interface ComboFeverProps {
   /** Banner text, `false` hides it. Default `x10 COMBO`. */
   banner?: ((combo: number) => string) | false;
   bannerStyle?: StyleProp<TextStyle>;
+  /** Banner position from the top of the view, e.g. below your header. Default `11%`. */
+  bannerTop?: DimensionValue;
   /** Called when the combo changes, 0 when it ends. */
   onCombo?: (combo: number) => void;
   /** `minimal` shows only the banner. `auto` (default) is balanced, minimal when the view reduces effects. */
@@ -87,6 +111,7 @@ export function ComboFever({
   color = '#FF6B4A',
   banner = (n) => `x${n} COMBO`,
   bannerStyle,
+  bannerTop,
   onCombo,
   level = 'auto',
 }: ComboFeverProps) {
@@ -96,8 +121,8 @@ export function ComboFever({
   const [combo, setCombo] = useState(0);
   // The shader only runs while there is something to show.
   const [active, setActive] = useState(false);
-  const count = useRef(0);
-  const last = useRef(-Infinity);
+  // Same combo rule as useRepStats, so the fire and an app's combo counter agree.
+  const run = useRef(EMPTY_REP_STATS);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const top = full ?? from + 10;
   const pop = useSharedValue(1);
@@ -114,9 +139,8 @@ export function ComboFever({
     if (event.type !== 'repCompleted') return;
     const e = event as unknown as RepEvent;
     if (exercises && !exercises.includes(e.exercise)) return;
-    count.current = e.timestamp - last.current <= gapMs ? count.current + 1 : 1;
-    last.current = e.timestamp;
-    const n = count.current;
+    run.current = addRep(run.current, e, gapMs);
+    const n = run.current.combo;
     setCombo(n);
     onCombo?.(n);
     const target = n < from ? 0 : Math.min(1, 0.35 + (0.65 * (n - from)) / Math.max(1, top - from));
@@ -132,7 +156,7 @@ export function ComboFever({
     }
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      count.current = 0;
+      run.current = EMPTY_REP_STATS;
       setCombo(0);
       onCombo?.(0);
       intensity.value = withTiming(
@@ -164,7 +188,8 @@ export function ComboFever({
         </Canvas>
       ) : null}
       {banner && combo >= from ? (
-        <Animated.View style={[styles.banner, bannerAnim]}>
+        <Animated.View
+          style={[styles.banner, bannerTop !== undefined && { top: bannerTop }, bannerAnim]}>
           <Text style={[styles.bannerText, { color }, bannerStyle]}>{banner(combo)}</Text>
         </Animated.View>
       ) : null}

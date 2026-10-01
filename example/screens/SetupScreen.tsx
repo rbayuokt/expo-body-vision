@@ -5,13 +5,14 @@ import {
   type Framing,
   type SetupState,
 } from '@rbayuokt/expo-body-vision';
-import { SetupConfetti } from '@rbayuokt/expo-body-vision/effects';
 import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { DemoProps } from '../App';
+import { CameraButtons } from '../components/CameraButtons';
 import { DemoFrame, useHudInset } from '../components/DemoFrame';
+import { FloatingStats } from '../components/FloatingStats';
 import { Choice, GhostButton, Readout, SwitchRow } from '../components/ui';
 import { color } from '../theme';
 import { useDemoInput } from './shared/input';
@@ -48,7 +49,8 @@ export function SetupScreen({ onBack }: DemoProps) {
           onSetupChange={(s) => setPhase(s.phase)}
           onSetupComplete={setCalibration}>
           <SetupOverlay />
-          <SetupConfetti />
+          <CameraButtons />
+          <FloatingStats />
         </BodyVisionView>
       }
       hud={

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Size
 import android.view.Surface
 import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -30,11 +31,14 @@ internal class CameraSource(
   private val previewView: PreviewView,
   private val analysisExecutor: ExecutorService,
   private val analyze: (ImageProxy) -> Unit,
-  private val fail: (String, String) -> Unit
+  private val fail: (String, String) -> Unit,
+  private val torchAvailable: (Boolean) -> Unit
 ) {
   private var provider: ProcessCameraProvider? = null
   private var useCases: Array<UseCase> = emptyArray()
   private var analysis: ImageAnalysis? = null
+  private var camera: Camera? = null
+  private var torch = false
   private var boundKey: String? = null
   private var generation = 0
 
@@ -80,7 +84,11 @@ internal class CameraSource(
           .build()
         analysis.setAnalyzer(analysisExecutor, analyze)
         val bound = arrayOf<UseCase>(preview, analysis)
-        provider.bindToLifecycle(owner, selector, *bound)
+        val camera = provider.bindToLifecycle(owner, selector, *bound)
+        torchAvailable(camera.cameraInfo.hasFlashUnit())
+        this.camera = camera
+        // A fresh bind starts with the torch off.
+        if (torch) setTorch(true)
         this.provider = provider
         this.useCases = bound
         this.analysis = analysis
@@ -89,6 +97,13 @@ internal class CameraSource(
         fail(ErrorCodes.CAMERA_UNAVAILABLE, "Could not start the camera: ${error.message}")
       }
     }, ContextCompat.getMainExecutor(context))
+  }
+
+  /** Main thread. Ignored on cameras without a flash unit. */
+  fun setTorch(on: Boolean) {
+    torch = on
+    val camera = camera ?: return
+    if (camera.cameraInfo.hasFlashUnit()) camera.cameraControl.enableTorch(on)
   }
 
   fun updateRotation() {
@@ -102,6 +117,7 @@ internal class CameraSource(
     if (useCases.isNotEmpty()) provider?.unbind(*useCases)
     useCases = emptyArray()
     analysis = null
+    camera = null
   }
 
   private fun displayRotation() = previewView.display?.rotation ?: Surface.ROTATION_0

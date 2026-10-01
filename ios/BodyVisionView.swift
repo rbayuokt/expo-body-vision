@@ -8,6 +8,7 @@ final class BodyVisionView: ExpoView {
 
   var facing = "front"
   var active = true
+  var torch = false
   var resizeMode = "cover"
   var config: [String: Any] = [:]
   var skeleton: [String: Any] = [:]
@@ -77,6 +78,7 @@ final class BodyVisionView: ExpoView {
       testInputChanged = false
       pipeline.setSource(active: active, front: facing == "front", replayInput: testInput, videoInput: video)
     }
+    pipeline.camera.update(torch: torch)
     updateViewTransform()
     updateDisplayLink()
   }

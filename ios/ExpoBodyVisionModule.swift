@@ -46,6 +46,10 @@ public class ExpoBodyVisionModule: Module {
         view.facing = facing
       }
 
+      Prop("torch") { (view: BodyVisionView, torch: Bool) in
+        view.torch = torch
+      }
+
       Prop("active") { (view: BodyVisionView, active: Bool) in
         view.active = active
       }

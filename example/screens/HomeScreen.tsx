@@ -32,6 +32,12 @@ export const DEMOS = [
     detail: 'Count reps in a clip, compare models.',
     tag: 'Offline',
   },
+  {
+    id: 'boxingSetup',
+    title: 'Boxing setup',
+    detail: 'Position, T-pose, measure, then fight.',
+    tag: 'Unlock',
+  },
   { id: 'boxing', title: 'Boxing', detail: 'Punch counter with impact effects.', tag: 'Peak mode' },
   { id: 'exercise', title: 'Rep counter', detail: 'Push-ups and squats.', tag: 'State machine' },
   { id: 'tpose', title: 'T-pose trigger', detail: 'A pose rule written in JS.', tag: 'Rules' },
@@ -58,7 +64,8 @@ export function HomeScreen({ onOpen }: { onOpen: (id: DemoId) => void }) {
         { paddingTop: insets.top + space.xl, paddingBottom: insets.bottom + space.xl },
       ]}
       testID="home">
-      <Label tint={color.lime}>expo-body-vision</Label>
+      {/* Lowercase, as people type it into npm. */}
+      <Text style={[type.label, styles.package]}>@rbayuokt/expo-body-vision</Text>
       <Text style={styles.title}>Body{'\n'}Vision</Text>
       <Text style={styles.subtitle}>
         Everything below runs natively. JavaScript only sets it up and hears the results.
@@ -108,6 +115,7 @@ export function HomeScreen({ onOpen }: { onOpen: (id: DemoId) => void }) {
 }
 
 const styles = StyleSheet.create({
+  package: { color: color.lime, textTransform: 'none', letterSpacing: 0.4 },
   root: { flex: 1, backgroundColor: color.ink },
   content: { paddingHorizontal: space.lg, gap: space.md },
   title: {

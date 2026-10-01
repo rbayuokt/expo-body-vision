@@ -26,6 +26,7 @@ import {
   type NativeEvent,
   type NativeEventBatch,
 } from './NativeBodyVisionView';
+import { CameraContext } from './camera';
 import { BodyVisionError } from './errors';
 import { BodyEventsContext, type BodyVisionEvent } from './events';
 import { resolveAsset, resolveModel, type PoseModelSource } from './model';
@@ -75,8 +76,13 @@ import type {
 import type { VideoSource } from './video';
 
 export interface BodyVisionViewProps {
-  /** Default `front`. */
+  /** Default `front`. `<CameraControls />` or `useCameraControls()` can flip it at runtime. */
   facing?: CameraFacing;
+  /**
+   * Keeps the torch on, on cameras that have one. Leave it out to let `<CameraControls />` or
+   * `useCameraControls()` switch it.
+   */
+  torch?: boolean;
   /** false stops the camera and inference. Default true. */
   active?: boolean;
   /** Default `cover`. */
@@ -154,7 +160,8 @@ export interface BodyVisionViewProps {
   onLandmarks?: (event: LandmarksEvent) => void;
   onError?: (error: BodyVisionError) => void;
   onReadiness?: (event: ReadinessEvent) => void;
-  onSetupChange?: (state: SetupState) => void;
+  /** `text` is the prompt to show: the step's own, your `prompts`, or the default. */
+  onSetupChange?: (state: SetupState, text: string) => void;
   onSetupComplete?: (calibration: CalibrationResult | null) => void;
   onVideoEnd?: () => void;
 
@@ -174,6 +181,11 @@ export interface BodySetupOptions extends SetupSessionOptions {
   speak?: (text: string) => void;
   /** Text per prompt, merged over `DEFAULT_SETUP_PROMPTS` (English). */
   prompts?: Partial<Record<SetupPrompt, string>>;
+  /**
+   * `afterSetup` holds the view's `rules` until setup is done and again after `restartSetup()`,
+   * so reps only count once the user is in position. Default `immediately`.
+   */
+  startRules?: 'immediately' | 'afterSetup';
 }
 
 export interface BodyVisionViewRef {
@@ -321,6 +333,54 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
       reject: (e: BodyVisionError) => void;
     } | null>(null);
     const [stats, setStats] = useState<BodyVisionStats | null>(null);
+    const [cam, setCam] = useState({ flipped: false, torchOn: false, hasTorch: false });
+    const activeFacing: CameraFacing = cam.flipped
+      ? facing === 'front'
+        ? 'back'
+        : 'front'
+      : facing;
+    const torch = props.torch ?? cam.torchOn;
+    const cameraAvailable = !testInput && !props.video;
+    // hasTorch waits for the other camera to report in.
+    const flip = useCallback(
+      () => setCam((c) => ({ flipped: !c.flipped, torchOn: false, hasTorch: false })),
+      [setCam]
+    );
+    const setTorch = useCallback((on: boolean) => setCam((c) => ({ ...c, torchOn: on })), [setCam]);
+    const camera = useMemo(
+      () => ({
+        facing: activeFacing,
+        flip,
+        torch,
+        setTorch,
+        hasTorch: cameraAvailable && cam.hasTorch,
+        available: cameraAvailable,
+      }),
+      [activeFacing, flip, torch, setTorch, cam.hasTorch, cameraAvailable]
+    );
+
+    const startCalibration = useCallback((durationMs: number) => {
+      const view = native.current;
+      if (!view) {
+        return Promise.reject(new BodyVisionError('NOT_MOUNTED', 'The view is not mounted.'));
+      }
+      calibration.current?.reject(
+        new BodyVisionError('CALIBRATION_FAILED', 'Superseded by a new calibration.')
+      );
+      return new Promise<CalibrationResult>((resolve, reject) => {
+        calibration.current = { resolve, reject };
+        view.startCalibration(durationMs).catch((error: unknown) => {
+          calibration.current = null;
+          reject(error);
+        });
+      });
+    }, []);
+
+    const setupContext = useSetupSession(setupOptions, startCalibration, latest);
+    // With `startRules: 'afterSetup'` the app's rules wait for setup, so nothing counts while
+    // the user is still walking into frame. The calibration it measured already applies.
+    const rulesActive =
+      setupOptions?.startRules !== 'afterSetup' || setupContext.value?.state.phase === 'done';
 
     // Keyed on the serialized value so inline objects don't resend props every render.
     const configKey = JSON.stringify({
@@ -328,7 +388,7 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
       prediction,
       tracking,
       performance,
-      rules: [...(rules ?? []), ...setupRules],
+      rules: [...(rulesActive ? (rules ?? []) : []), ...setupRules],
       delegate: experimentalDelegate,
       readiness: readinessOption || undefined,
       calibration: props.calibration?.torsoLength,
@@ -355,7 +415,8 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
       if (configError) latest.current.onError?.(configError);
     }, [configError]);
 
-    const wantsStats = debug || !!props.onStats;
+    const [statsUsers, setStatsUsers] = useState(0);
+    const wantsStats = debug || !!props.onStats || statsUsers > 0;
     const landmarkInterval =
       typeof landmarks === 'object' ? (landmarks.intervalMs ?? 100) : landmarks ? 100 : 0;
     const telemetry = useMemo(
@@ -375,25 +436,6 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
       []
     );
 
-    const startCalibration = useCallback((durationMs: number) => {
-      const view = native.current;
-      if (!view) {
-        return Promise.reject(new BodyVisionError('NOT_MOUNTED', 'The view is not mounted.'));
-      }
-      calibration.current?.reject(
-        new BodyVisionError('CALIBRATION_FAILED', 'Superseded by a new calibration.')
-      );
-      return new Promise<CalibrationResult>((resolve, reject) => {
-        calibration.current = { resolve, reject };
-        view.startCalibration(durationMs).catch((error: unknown) => {
-          calibration.current = null;
-          reject(error);
-        });
-      });
-    }, []);
-
-    const setupContext = useSetupSession(setupOptions, startCalibration, latest);
-
     const listeners = useRef(new Set<(event: BodyVisionEvent) => void>());
     const subscribe = useCallback((listener: (event: BodyVisionEvent) => void) => {
       listeners.current.add(listener);
@@ -401,6 +443,11 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
         listeners.current.delete(listener);
       };
     }, []);
+    const wantStats = useCallback(() => {
+      setStatsUsers((n) => n + 1);
+      return () => setStatsUsers((n) => n - 1);
+    }, []);
+    const events = useMemo(() => ({ subscribe, wantStats }), [subscribe, wantStats]);
 
     const dispatch = useCallback(
       (event: NativeEvent) => {
@@ -437,6 +484,9 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
             return;
           case 'stats':
             if (p.debug) setStats(event as unknown as BodyVisionStats);
+            break;
+          case 'cameraReady':
+            setCam((c) => ({ ...c, hasTorch: event.hasTorch === true }));
             break;
         }
         const handler = HANDLERS[event.type];
@@ -492,7 +542,8 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
         <NativeBodyVisionView
           ref={native}
           style={StyleSheet.absoluteFill}
-          facing={facing}
+          facing={activeFacing}
+          torch={torch}
           active={active}
           resizeMode={resizeMode}
           config={config.value ?? { performance }}
@@ -503,9 +554,9 @@ export const BodyVisionView = forwardRef<BodyVisionViewRef, BodyVisionViewProps>
           onEvents={onEvents}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          <BodyEventsContext.Provider value={subscribe}>
+          <BodyEventsContext.Provider value={events}>
             <BodySetupContext.Provider value={setupContext.value}>
-              {props.children}
+              <CameraContext.Provider value={camera}>{props.children}</CameraContext.Provider>
             </BodySetupContext.Provider>
           </BodyEventsContext.Provider>
         </View>
@@ -578,6 +629,10 @@ function useResolvedVideo(
   return resolved?.asset === asset ? resolved.uri : 'pending';
 }
 
+function setupText(state: SetupState, options: BodySetupOptions | null): string {
+  return state.text ?? options?.prompts?.[state.prompt] ?? DEFAULT_SETUP_PROMPTS[state.prompt];
+}
+
 /**
  * Runs the setup session while `options` is set. Voice prompts wait `SPEECH_DELAY_MS` so a
  * state that flickers past isn't spoken.
@@ -595,7 +650,7 @@ function useSetupSession(
     const o = JSON.parse(optionsKey) as BodySetupOptions;
     const created: SetupSession = new SetupSession(o, calibrate, (next) => {
       setEntry({ session: created, state: next });
-      latest.current.onSetupChange?.(next);
+      latest.current.onSetupChange?.(next, setupText(next, o));
       if (next.phase === 'done') latest.current.onSetupComplete?.(next.calibration);
     });
     return created;
@@ -611,8 +666,7 @@ function useSetupSession(
   }, [voiceKey]);
   useEffect(() => () => speaker?.stop(), [speaker]);
 
-  const text =
-    state.text ?? options?.prompts?.[state.prompt] ?? DEFAULT_SETUP_PROMPTS[state.prompt];
+  const text = setupText(state, options);
   const say = options?.speak ?? speaker?.speak;
   const lastSpoken = useRef<string | null>(null);
   useEffect(() => {

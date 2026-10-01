@@ -32,6 +32,7 @@ internal class BodyPipeline(private val context: Context) {
   private var landmarksInterval = 0.1
   private var lastLandmarks = 0.0
   private var cameraReadyPending = true
+  private var hasTorch = false
   private var preferGpu = false
   private var backendName: String? = null
   private var modelSpec: String? = null
@@ -143,7 +144,7 @@ internal class BodyPipeline(private val context: Context) {
     }
     replay = source
     lock.withLock {
-      engine.events.push(EngineEvent("cameraReady", nowSeconds(), mapOf("width" to 0, "height" to 0, "backend" to "replay", "delegate" to "none")))
+      engine.events.push(EngineEvent("cameraReady", nowSeconds(), mapOf("width" to 0, "height" to 0, "backend" to "replay", "delegate" to "none", "hasTorch" to false)))
     }
     source.start()
     return false
@@ -173,7 +174,7 @@ internal class BodyPipeline(private val context: Context) {
   fun analyze(image: ImageProxy) {
     try {
       val rotation = image.imageInfo.rotationDegrees
-      runInference(image.width, image.height, rotation, BodyVisionFrame(image.width, image.height, rotation, image, null, frameBitmap))
+      runInference(image.width, image.height, rotation, BodyVisionFrame(image.width, image.height, rotation, image, null, frameBitmap), fromCamera = true)
     } finally {
       image.close()
     }
@@ -184,7 +185,12 @@ internal class BodyPipeline(private val context: Context) {
     runInference(bitmap.width, bitmap.height, 0, BodyVisionFrame(bitmap.width, bitmap.height, 0, null, bitmap, null))
   }
 
-  private fun runInference(imageWidth: Int, imageHeight: Int, rotation: Int, frame: BodyVisionFrame) {
+  /** Main thread, whenever the camera binds. */
+  fun setTorchAvailable(available: Boolean) {
+    lock.withLock { hasTorch = available }
+  }
+
+  private fun runInference(imageWidth: Int, imageHeight: Int, rotation: Int, frame: BodyVisionFrame, fromCamera: Boolean = false) {
     val now = nowSeconds()
     val upright = rotation % 180 == 0
     val width = (if (upright) imageWidth else imageHeight).toDouble()
@@ -192,6 +198,7 @@ internal class BodyPipeline(private val context: Context) {
     var fps = 0.0
     var request = BackendRequest("mediapipe", null, false, false)
     var readyPending = false
+    var torch = false
     lock.withLock {
       stats.cameraFrames++
       fps = engine.governor.inferenceFps
@@ -199,6 +206,7 @@ internal class BodyPipeline(private val context: Context) {
       request = BackendRequest(backendName ?: defaultBackend(modelSpec, accuracy), modelSpec, accuracy, preferGpu && !gpuFailed)
       readyPending = cameraReadyPending
       cameraReadyPending = false
+      torch = fromCamera && hasTorch
     }
     if (request.model == "pending") return
     // Small tolerance so a 30 fps camera isn't aliased down to 15 by frame-time jitter.
@@ -209,7 +217,7 @@ internal class BodyPipeline(private val context: Context) {
     val backend = backend(request) ?: return
     if (readyPending) {
       lock.withLock {
-        engine.events.push(EngineEvent("cameraReady", now, mapOf("width" to width, "height" to height, "backend" to request.name, "delegate" to backend.delegateName)))
+        engine.events.push(EngineEvent("cameraReady", now, mapOf("width" to width, "height" to height, "backend" to request.name, "delegate" to backend.delegateName, "hasTorch" to torch)))
       }
     }
     lastInferenceStart = now

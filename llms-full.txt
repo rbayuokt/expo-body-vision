@@ -95,7 +95,8 @@ Props (all optional):
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `facing` | `'front' \| 'back'` | `front` | |
+| `facing` | `'front' \| 'back'` | `front` | `<CameraControls />` or `useCameraControls().flip()` switch it at runtime |
+| `torch` | boolean | unset | keeps the torch on where the camera has one. Unset lets `CameraControls` drive it |
 | `active` | boolean | true | false stops camera and inference, pauses `video` |
 | `resizeMode` | `'cover' \| 'contain'` | `cover` | |
 | `performance` | `'auto' \| 'performance' \| 'balanced' \| 'accuracy'` | `auto` | fixed modes run 15, 24, 30 inferences/s, `auto` adapts to latency and heat, `accuracy` also picks the larger model |
@@ -137,6 +138,12 @@ Ref (`useRef<BodyVisionViewRef>()`): `calibrate({ durationMs? })` returns `Calib
 
 Children of `BodyVisionView` render over the camera, in the same coordinate space as event
 positions. Put overlays and effects there.
+
+Camera switch and flash: `<CameraControls />` as a child gives a flip button and a flash button
+(flash only where `hasTorch`, nothing without a live camera). Props: `style` (position, default
+top right), `buttonStyle`, `color`, `activeColor`, `activeIconColor`,
+`icons={{ flip, torchOn, torchOff }}`, `labels`. For custom UI, `useCameraControls()` returns
+`{ facing, flip, torch, setTorch, hasTorch, available }`. `CameraReadyEvent` has `hasTorch`.
 
 ## 5. Rules
 
@@ -281,9 +288,47 @@ import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
 </BodyVisionView>
 ```
 
-For a fully custom look, skip `<BodySetup />` and render from `useBodySetup()` inside the view
-(`state.phase`, `state.prompt`, `state.progress`, `state.screenDirection`, `text`, `restart()`).
-Pass a saved `calibration` prop later to skip measuring.
+For a fully custom look, skip `<BodySetup />` and render from `onSetupChange(state, text)` or
+`useBodySetup()` inside the view (`state.phase`, `state.prompt`, `state.progress`,
+`state.screenDirection`, `text`, `restart()`). `text` is already resolved from the step prompt, your
+`prompts` or the default, so don't map prompt codes yourself. Pass a saved `calibration` prop
+later to skip measuring.
+
+Setup first, then counting: pass the rules up front with `startRules: 'afterSetup'`. They stay
+inactive until setup is done, the measured calibration applies, and `ref.restartSetup()` pauses
+them again. Never remount the view or swap `setup` to `false` to switch from setup to counting.
+
+```tsx
+<BodyVisionView
+  ref={view}
+  setup={{ steps: ['position', { pose: tPose() }, 'calibrate', { countdown: 3 }], startRules: 'afterSetup' }}
+  rules={[punch()]}
+  smoothing="none"
+  onSetupChange={(state, text) => setPrompt(text)}
+  onSetupComplete={() => setUnlocked(true)}
+/>
+```
+
+## 7a. Performance overlay: useBodyVisionStats
+
+`const stats = useBodyVisionStats()` inside any child of `BodyVisionView` returns
+`BodyVisionStats | null` about once a second (`renderFps`, `inferenceFps`, `inferenceMs`,
+`latencyMs`, `backend`, `delegate`, `thermalLevel`, `bodyVisible`...) and turns native stats on
+while mounted. Use it for FPS badges and debug overlays instead of `onStats` plus state.
+
+## 7b. Counting stats: useRepStats
+
+```tsx
+import { useRepStats } from '@rbayuokt/expo-body-vision';
+
+const { stats, track, reset } = useRepStats({ comboGapMs: 900, exercises: ['punch'] });
+<BodyVisionView rules={[punch()]} {...track} />
+// stats: count, left, right, combo, best, streak, missed, lastMiss, lastRepAt
+```
+
+Use it instead of writing counters, combo timers or streaks by hand. `track` provides `onRep` and
+`onRepRejected`. To also handle reps yourself, call `track.onRep(e)` inside your own `onRep`.
+`ComboFever` uses the same combo rule.
 
 ## 8. Video files
 
@@ -356,7 +401,8 @@ Props:
   `colors` (`good`, `perfect`, `rejected`, `level`), `showCount`, `textStyle`, `size`,
   `durationMs`, `onPlay`, `level`.
 - `ComboFever`: `from`, `full`, `gapMs` (default 900), `exercises`, `color`, `banner` (function or
-  `false`), `bannerStyle`, `onCombo`, `level`.
+  `false`), `bannerStyle`, `bannerTop` (position from the top, e.g. below a header, default
+  `'11%'`), `onCombo`, `level`.
 - `PoseAura`: `poses`, `growMs` (default 3000), `color`, `level`.
 - `SetupConfetti`: `colors` (five), `label` (or `false`), `labelStyle`, `durationMs`, `trigger`, `level`.
 - `useImpactShake(strength = 9)`: `{ style, shake }`. Put `style` on an `Animated.View` around the
@@ -815,6 +861,8 @@ if (!picked.canceled) {
 ## 15. Advice for agents
 
 - Start from presets and only write custom rules when a preset can't be tuned with overrides.
+- Setup before counting: `setup={{ ..., startRules: 'afterSetup' }}` plus `rules`, never a remount.
+- Counts, combos and streaks come from `useRepStats`, don't hand-roll them.
 - Put effects and overlays inside `BodyVisionView`. Hooks like `useBodyVisionEvents` and
   `useBodySetup` return nothing outside it.
 - Fast movements: `smoothing="none"` (or `light`) and `mode: 'peak'`.

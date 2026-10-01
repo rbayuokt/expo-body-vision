@@ -8,19 +8,20 @@ import { BackHandler } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BoxingScreen } from './screens/BoxingScreen';
+import { BoxingSetupScreen } from './screens/BoxingSetupScreen';
 import { CustomSetupScreen } from './screens/CustomSetupScreen';
 import { ExerciseScreen } from './screens/ExerciseScreen';
 import { HomeScreen, type DemoId } from './screens/HomeScreen';
 import { LifecycleScreen } from './screens/LifecycleScreen';
 import { PerformanceScreen } from './screens/PerformanceScreen';
-import { CameraGate, InputContext, type InputKind } from './screens/shared/input';
 import { SetupScreen } from './screens/SetupScreen';
 import { SkeletonScreen } from './screens/SkeletonScreen';
 import { StressScreen } from './screens/StressScreen';
-import { TargetScreen } from './screens/TargetScreen';
 import { TPoseScreen } from './screens/TPoseScreen';
+import { TargetScreen } from './screens/TargetScreen';
 import { TrackingScreen } from './screens/TrackingScreen';
 import { VideoScreen } from './screens/VideoScreen';
+import { CameraGate, InputContext, type InputKind } from './screens/shared/input';
 
 export interface DemoProps {
   onBack: () => void;
@@ -31,6 +32,7 @@ const SCREENS: Record<DemoId, (props: DemoProps) => React.JSX.Element> = {
   setup: SetupScreen,
   customSetup: CustomSetupScreen,
   video: VideoScreen,
+  boxingSetup: BoxingSetupScreen,
   boxing: BoxingScreen,
   skeleton: SkeletonScreen,
   tpose: TPoseScreen,

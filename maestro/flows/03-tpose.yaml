@@ -23,7 +23,7 @@ tags:
 - extendedWaitUntil:
     visible:
       id: tpose-state
-      text: "waiting"
+      text: "Arms out to trigger"
     timeout: 10000
 # The recording ends with a 0.2 s flicker that must not count.
 - waitForAnimationToEnd:

@@ -5,34 +5,56 @@ import {
 } from '@rbayuokt/expo-body-vision';
 import { registerDemoBackends } from 'demo-pose-backends';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { DemoProps } from '../App';
+import { CameraButtons } from '../components/CameraButtons';
 import { DemoFrame } from '../components/DemoFrame';
-import { Choice, Label, Readout } from '../components/ui';
-import { color } from '../theme';
+import { FloatingStats } from '../components/FloatingStats';
+import { StatusPill } from '../components/StatusPill';
+import { Label, Segmented, Stat } from '../components/ui';
+import { color, space } from '../theme';
 import { useDemoInput } from './shared/input';
 
-const MODES = ['auto', 'performance', 'balanced', 'accuracy'] as const;
+type ModelChoice = 'default' | 'lite' | 'full' | 'heavy' | 'platform';
+
 // Apple Vision on iOS, registered natively through BodyVisionBackends (see modules/demo-pose-backends).
 // Android has no extra backend: its default is already ML Kit.
 const PLATFORM_BACKEND: string | undefined = registerDemoBackends()[0];
-const MODELS = PLATFORM_BACKEND
-  ? (['default', 'lite', 'full', 'heavy', 'platform'] as const)
-  : (['default', 'lite', 'full', 'heavy'] as const);
-type ModelChoice = 'default' | 'lite' | 'full' | 'heavy' | 'platform';
 const HEAVY_MODEL = require('../assets/models/pose_landmarker_heavy.task');
+
+const MODES: { id: PerformanceMode; label: string }[] = [
+  { id: 'auto', label: 'Auto' },
+  { id: 'performance', label: 'Fast' },
+  { id: 'balanced', label: 'Balanced' },
+  { id: 'accuracy', label: 'Accurate' },
+];
+const MODELS: { id: ModelChoice; label: string }[] = [
+  { id: 'default', label: 'Default' },
+  { id: 'lite', label: 'Lite' },
+  { id: 'full', label: 'Full' },
+  { id: 'heavy', label: 'Heavy' },
+  ...(PLATFORM_BACKEND ? [{ id: 'platform' as const, label: 'Vision' }] : []),
+];
+const DELEGATES: { id: 'cpu' | 'gpu'; label: string }[] = [
+  { id: 'cpu', label: 'CPU' },
+  { id: 'gpu', label: 'GPU (experimental)' },
+];
 
 export function PerformanceScreen({ onBack }: DemoProps) {
   const input = useDemoInput('squat-clean', true);
   const [mode, setMode] = useState<PerformanceMode>('auto');
-  const [stats, setStats] = useState<BodyVisionStats | null>(null);
-  const [target, setTarget] = useState('-');
-  const [lastError, setLastError] = useState('-');
-  const [delegate, setDelegate] = useState<'cpu' | 'gpu'>('cpu');
   const [model, setModel] = useState<ModelChoice>('default');
-  const f = (v: number | undefined, unit = '') =>
-    v === undefined ? '-' : `${v.toFixed(0)}${unit}`;
+  const [delegate, setDelegate] = useState<'cpu' | 'gpu'>('cpu');
+  const [stats, setStats] = useState<BodyVisionStats | null>(null);
+  const [target, setTarget] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const status = error
+    ? { text: error, dot: color.coral }
+    : target
+      ? { text: `Auto target ${target}`, dot: color.lime }
+      : { text: `${MODES.find((m) => m.id === mode)?.label} mode`, dot: color.muted };
 
   return (
     <DemoFrame
@@ -56,62 +78,68 @@ export function PerformanceScreen({ onBack }: DemoProps) {
                 : undefined
           }
           onStats={setStats}
-          onError={(e) => setLastError(`${e.code}: ${e.message}`)}
+          onError={(e) => setError(`${e.code}: ${e.message}`)}
           onPerformanceChange={(e) =>
-            setTarget(`${e.inferenceFps} fps${e.reducedEffects ? ', lighter effects' : ''}`)
-          }
-        />
+            setTarget(`${e.inferenceFps} poses/s${e.reducedEffects ? ', lighter effects' : ''}`)
+          }>
+          <StatusPill text={status.text} dot={status.dot} testID="perf-rate" />
+          <CameraButtons />
+          <FloatingStats />
+        </BodyVisionView>
       }
       hud={
         <>
-          <Choice options={MODES} value={mode} onChange={setMode} testIDPrefix="mode" />
-          <Choice
-            options={MODELS}
-            labels={{
-              default: 'Default',
-              lite: 'MediaPipe Lite',
-              full: 'Full',
-              heavy: 'Heavy (file)',
-              platform: PLATFORM_BACKEND ?? '',
-            }}
-            value={model}
-            onChange={setModel}
-            testIDPrefix="model"
-          />
-          <Choice
-            options={['cpu', 'gpu'] as const}
-            labels={{ cpu: 'CPU', gpu: 'GPU (experimental)' }}
-            value={delegate}
-            onChange={setDelegate}
-            testIDPrefix="delegate"
-          />
-          <View style={styles.grid}>
-            <Readout label="Drawn" value={f(stats?.renderFps, ' fps')} tint={color.lime} />
-            <Readout
-              label="Pose"
-              value={stats ? `${f(stats.inferenceFps)}/${f(stats.targetInferenceFps)} fps` : '-'}
+          <View style={styles.stats}>
+            <Stat
+              value={
+                stats
+                  ? `${stats.inferenceFps.toFixed(0)}/${stats.targetInferenceFps.toFixed(0)}`
+                  : '-'
+              }
+              label="Poses /s"
+              tint={color.lime}
             />
-            <Readout label="Pose time" value={f(stats?.inferenceMs, ' ms')} />
+            <Stat
+              value={stats ? `${stats.inferenceMs.toFixed(0)}` : '-'}
+              label="Ms / pose"
+              tint={color.text}
+            />
+            <Stat
+              value={stats ? `${stats.thermalLevel}` : '-'}
+              label="Thermal"
+              tint={color.amber}
+            />
+            <Stat
+              value={stats ? (stats.bodyVisible ? 'Yes' : 'No') : '-'}
+              label="Body"
+              tint={stats?.bodyVisible ? color.lime : color.muted}
+              testID="perf-body"
+            />
           </View>
-          <View style={styles.grid}>
-            <Readout label="Camera" value={f(stats?.cameraFps, ' fps')} />
-            <Readout label="Frame p95" value={f(stats?.frameIntervalP95Ms, ' ms')} />
-            <Readout label="Latency" value={f(stats?.latencyMs, ' ms')} />
+          <View style={styles.section}>
+            <Label>Mode</Label>
+            <Segmented options={MODES} value={mode} onChange={setMode} testIDPrefix="mode" />
           </View>
-          <View style={styles.grid}>
-            <Readout label="Body" value={stats?.bodyVisible ? 'yes' : 'no'} testID="perf-body" />
-            <Readout label="Thermal" value={stats ? `${stats.thermalLevel}` : '-'} />
-            <Readout label="Backend" value={stats ? `${stats.backend}/${stats.delegate}` : '-'} />
+          <View style={styles.section}>
+            <Label>Model</Label>
+            <Segmented
+              options={MODELS}
+              value={model}
+              onChange={(m) => {
+                setModel(m);
+                setError(null);
+              }}
+              testIDPrefix="model"
+            />
           </View>
-          <View style={styles.target}>
-            <Label>Auto target</Label>
-            <Readout label="" value={target} testID="perf-rate" />
-          </View>
-          <View style={styles.target}>
-            <Label>Last error</Label>
-            <Text style={styles.error} numberOfLines={3} testID="perf-error">
-              {lastError}
-            </Text>
+          <View style={styles.section}>
+            <Label>Delegate</Label>
+            <Segmented
+              options={DELEGATES}
+              value={delegate}
+              onChange={setDelegate}
+              testIDPrefix="delegate"
+            />
           </View>
         </>
       }
@@ -120,7 +148,6 @@ export function PerformanceScreen({ onBack }: DemoProps) {
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', gap: 12 },
-  target: { gap: 2 },
-  error: { color: color.coral, fontSize: 13 },
+  stats: { flexDirection: 'row' },
+  section: { gap: space.sm },
 });

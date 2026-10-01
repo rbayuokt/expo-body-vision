@@ -1,24 +1,67 @@
 # expo-body-vision
 
-Body tracking for React Native and Expo with the heavy lifting done in native code. The camera,
-the pose model, tracking, your pose and exercise rules, hand targets and the skeleton overlay all
-run on the native side. JavaScript describes what to look for once and then only hears about the
-moments that matter, like `{ type: 'repCompleted', exercise: 'pushup', count: 12 }`.
+<p align="center">
+  <img src="docs/expo-body-vision-demo.gif" alt="The example app running side by side on an OPPO with a MediaTek Helio P90 and on an iPhone 11 Pro: live skeleton with the fps card open, guided and custom setup, the boxing unlock, punch effects with combos, and push-ups and squats in landscape and portrait." width="480" />
+</p>
 
-Camera frames never reach JS and nothing runs through React per frame. Block the JS thread for
-four seconds and the skeleton keeps following the user and reps keep counting. The events arrive
-once JS is free again. On an iPhone 11 Pro the pose model takes 26 ms per frame. On a low-end
-Android phone by today's standards (OPPO CPH2217, MediaTek Helio P90 from 2019) the model
-manages 5 to 15 poses a second depending on the backend, and the overlay still draws at 60 fps
-because joints are predicted to display time between poses.
+<p align="center">
+  <a href="https://drive.google.com/file/d/1GeauqR8CniEURJ31pNrtW5lPRuGbFpOm/view?usp=sharing">Full-size video</a> · <a href="#benchmarks">Benchmarks on real phones</a>
+  <br />
+  <sub>The GIF and the video play at 1.3x speed to keep them short.</sub>
+</p>
 
-You can shape almost all of it to your app. Poses, exercises and targets are plain data you write
-in TypeScript and the engine evaluates natively. The guided setup can run without our UI, so it
-fits whatever your design needs, and the pose model can be swapped, even for your own native
-detector.
+Body tracking for React Native and Expo, fully native on iOS and Android. The camera, the pose
+model, tracking, your rules and the skeleton all run in Swift and Kotlin. JavaScript describes
+what to watch for once, then only hears about the moments that matter, like
+`{ type: 'repCompleted', exercise: 'pushup', count: 12 }`. Camera frames never touch JS, so you
+can block the JS thread for four seconds and the skeleton keeps following the user and reps keep
+counting. [How it works](#how-it-works) shows the full path.
+
+Use it to count push-ups, squats and punches, react when someone holds a T-pose or raises both
+hands, build games where players hit targets with their hands, walk users into frame before a
+workout, or count reps in a video they recorded earlier. [Examples](#examples) has a short recipe
+for each.
+
+Almost every part can be swapped or extended:
+
+- **Pose model.** Android ships ML Kit (default) and MediaPipe Lite and Full. iOS ships MediaPipe
+  Lite (default) and Full. Load your own MediaPipe `.task` file on either, or register your own
+  detector in Swift or Kotlin. The example app adds Apple Vision this way. See
+  [Backends and models](#backends-and-models), [Your own model file](#your-own-model-file) and
+  [Your own native backend](#your-own-native-backend).
+- **Rules.** Poses, exercises and hand targets are plain data you write in TypeScript, from angles,
+  distances and heights between joints. The engine runs them natively. See
+  [Pose triggers](#pose-triggers), [Exercises](#exercises) and [Targets](#targets).
+- **Steps in order.** Chain steps into a sequence: get in position, hold a T-pose, then raise
+  both hands, measure, count down. Each pose step is checked natively and only moves on when its
+  own pose holds. `onSetupChange` tells you the current step, and your rules can wait until the
+  sequence is done. See [Unlock the fight after a setup](#unlock-the-fight-after-a-setup) for a
+  full example and [Steps](#steps) for every step type.
+- **Voice guidance.** Setup prompts can be spoken out loud, so users don't have to read the screen
+  from across the room. `voice: true` uses expo-speech, with your own language, rate and voice,
+  or pass `speak` to use any text-to-speech you like. Prompts are left and right from the user's
+  side, and every line can be reworded. See [Prompts and voice](#prompts-and-voice).
+- **UI.** Anything you put inside the view renders over the camera: your own setup screen, HUD,
+  buttons or animations. The skeleton is styled per bone and joint, with trails. See
+  [Your own look](#your-own-look) and [Styling the skeleton](#styling-the-skeleton).
+- **Effects and setup are optional add-ons.** `/effects` brings hit, rep, combo and aura effects
+  drawn with Skia, plus your own shaders. `/setup` brings a ready-made guided setup. The main
+  package doesn't pull in Skia or Reanimated unless you import them. See [Effects](#effects),
+  [Your own effect](#your-own-effect) and [Guided setup](#guided-setup).
+- **Inputs.** Live front or back camera with a flash toggle, a video file, or recorded body frames
+  for tests. See [Camera switch and flash](#camera-switch-and-flash),
+  [Analyzing a video file](#analyzing-a-video-file) and
+  [Testing without a camera](#testing-without-a-camera).
+
+It's built for phones that aren't new. On an OPPO CPH2217 (MediaTek Helio P90, 2019) the model
+runs 5 to 15 times a second depending on the backend, and the overlay still draws at 60 fps because
+joints are predicted forward to the display between poses. On an iPhone 11 Pro a pose takes about
+20 to 26 ms. See [Performance](#performance) for how it adapts and the numbers.
 
 ## At a glance
 
+- **Fully native**: camera, model, tracking, rules and drawing run in Swift and Kotlin, and keep
+  going while the JS thread is blocked
 - **Live skeleton** over the camera, drawn natively with per-bone styling and motion trails
 - **Rep counting** for push-ups, squats and punches, plus your own exercises on the same
   state machine that rejects half reps, too-fast reps and bad form
@@ -27,7 +70,11 @@ detector.
 - **Body interaction** for games, with hand or any-joint targets, native hit testing and a hit
   effect that doesn't wait for JS
 - **Guided setup** that talks the user into frame, can ask for a confirming pose, measures their
-  proportions and counts down, with voice and a built-in or fully custom UI
+  proportions and counts down, with a built-in or fully custom UI
+- **Steps in order**: chain position, any number of poses, measuring and a countdown, each pose
+  holding before the next, and hold your rules until the sequence is done
+- **Voice guidance** that reads the prompts out through expo-speech in any language, or through
+  your own text-to-speech
 - **Adaptive performance** that lowers the inference rate when a phone can't keep up or gets hot,
   while the overlay stays at display rate
 - **Video files** run through the same engine without a camera, so you can count reps in a
@@ -36,8 +83,12 @@ detector.
   shatter and JoJo hits, rep slams, level ups, combo fever, an aura and confetti, all
   configurable, or your own shader through `createImpactEffect`
 - **Portrait and landscape**, front and back camera, mirroring handled for you
+- **Camera switch and flash** as ready-made `<CameraControls />` buttons, or a hook for your own
+- **Live numbers** for your UI: `useRepStats` keeps count, sides, combos and misses, and
+  `useBodyVisionStats` reports fps, time per pose and latency for a debug badge
 - **Swappable pose backends**. ML Kit and MediaPipe are built in, and you can load your own
   `.task` model file or register your own Swift or Kotlin detector
+- **Optional add-ons**: `/effects` and `/setup` bring Skia and Reanimated only if you import them
 - **Testable without a camera**, since recorded body sequences can stand in for the camera in
   unit and end-to-end tests
 
@@ -130,12 +181,25 @@ Agents that can't read local files can use the copy on GitHub,
 
 
 - [Your first screen](#your-first-screen)
+- [Examples](#examples)
+  - [Count reps after a quick setup](#count-reps-after-a-quick-setup)
+  - [Trigger something when a pose is held](#trigger-something-when-a-pose-is-held)
+  - [Hit targets with your hands](#hit-targets-with-your-hands)
+  - [Boxing with hit effects](#boxing-with-hit-effects)
+  - [Unlock the fight after a setup](#unlock-the-fight-after-a-setup)
+  - [Guided setup with the built-in overlay](#guided-setup-with-the-built-in-overlay)
+  - [Restyle the skeleton](#restyle-the-skeleton)
+  - [Count reps in a recorded video](#count-reps-in-a-recorded-video)
+  - [Show live fps on screen](#show-live-fps-on-screen)
+- [Camera switch and flash](#camera-switch-and-flash)
 - [How it works](#how-it-works)
 - [Poses, exercises and targets](#poses-exercises-and-targets)
   - [Pose triggers](#pose-triggers)
   - [Exercises](#exercises)
   - [Targets](#targets)
 - [Listening to events](#listening-to-events)
+  - [Live performance numbers](#live-performance-numbers)
+  - [Counting stats](#counting-stats)
 - [Guided setup](#guided-setup)
   - [Steps](#steps)
   - [Your own look](#your-own-look)
@@ -148,6 +212,7 @@ Agents that can't read local files can use the copy on GitHub,
 - [Analyzing a video file](#analyzing-a-video-file)
   - [Watching it with the overlay](#watching-it-with-the-overlay)
 - [Performance](#performance)
+  - [Benchmarks](#benchmarks)
   - [Measured on real phones](#measured-on-real-phones)
 - [Backends and models](#backends-and-models)
   - [Your own model file](#your-own-model-file)
@@ -183,9 +248,283 @@ export function PushUps() {
 }
 ```
 
+Outside React, `getCameraPermissionsAsync()` and `requestCameraPermissionsAsync()` do the same
+as the hook. `resizeMode` is `cover` (default, fills the view and crops) or `contain` (the whole
+camera image, letterboxed), and the overlay follows either way.
+
 The native skeleton is on by default. Children render over the preview. Rules are sent to
 native once and re-sent only when their serialized value changes, so inline arrays and
 objects don't cost anything per render.
+
+## Examples
+
+One recipe per screen in the example app, smallest version first. Each assumes camera permission
+is already granted, like in [Your first screen](#your-first-screen), and links to the full screen.
+
+These are starting points, not the only way to use the library. Mix them, change the rules, draw
+your own UI, or build something none of them cover, like a dance game, a yoga hold timer or a
+physio exercise tracker. The pieces are the same: rules describe what to watch for, events tell
+you when it happened, and what you show is up to you.
+
+### Count reps after a quick setup
+
+The user gets into position first, and push-ups only start counting once setup is done.
+`useRepStats` keeps the numbers.
+
+```tsx
+import { BodyVisionView, pushUp, useRepStats } from '@rbayuokt/expo-body-vision';
+import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
+import { Text } from 'react-native';
+
+const RULES = [pushUp()];
+
+export function PushUps() {
+  const { stats, track } = useRepStats();
+  return (
+    <BodyVisionView
+      style={{ flex: 1 }}
+      rules={RULES}
+      setup={{ framing: 'floor', startRules: 'afterSetup' }}
+      {...track}>
+      <BodySetup />
+      <Text style={{ color: 'white', fontSize: 64 }}>{stats.count}</Text>
+      <Text style={{ color: 'white' }}>Not counted: {stats.missed}</Text>
+    </BodyVisionView>
+  );
+}
+```
+
+Swap `pushUp()` for `squat()` and `framing: 'floor'` for `'fullBody'` to count squats.
+Full screen: [example/screens/ExerciseScreen.tsx](example/screens/ExerciseScreen.tsx).
+
+### Trigger something when a pose is held
+
+`onPoseEntered` fires once when the pose has held long enough, `onPoseExited` when it ends.
+
+```tsx
+import { BodyVisionView, tPose } from '@rbayuokt/expo-body-vision';
+import { useState } from 'react';
+import { Text } from 'react-native';
+
+const RULES = [tPose()];
+
+export function TPose() {
+  const [holding, setHolding] = useState(false);
+  return (
+    <BodyVisionView
+      style={{ flex: 1 }}
+      rules={RULES}
+      onPoseEntered={() => setHolding(true)}
+      onPoseExited={(e) => {
+        setHolding(false);
+        console.log(`held for ${e.durationMs} ms`);
+      }}>
+      <Text style={{ color: 'white', fontSize: 32 }}>{holding ? 'Holding!' : 'Arms out'}</Text>
+    </BodyVisionView>
+  );
+}
+```
+
+`armsUp()` works the same way for both hands up. Write your own with
+[Pose triggers](#pose-triggers). Full screen:
+[example/screens/TPoseScreen.tsx](example/screens/TPoseScreen.tsx).
+
+### Hit targets with your hands
+
+A target is a spot on screen, in fractions of the view. Native checks the wrists against it on
+every pose and plays a hit pulse without waiting for JS.
+
+```tsx
+import { BodyVisionView, defineTarget } from '@rbayuokt/expo-body-vision';
+import { useState } from 'react';
+
+const SPOTS = [
+  [0.2, 0.3],
+  [0.8, 0.3],
+  [0.5, 0.2],
+];
+
+export function TargetGame() {
+  const [i, setI] = useState(0);
+  const [x, y] = SPOTS[i];
+  return (
+    <BodyVisionView
+      style={{ flex: 1 }}
+      rules={[defineTarget({ id: 'pad', x, y, radius: 0.08 })]}
+      onTargetHit={() => setI((n) => (n + 1) % SPOTS.length)}
+    />
+  );
+}
+```
+
+Full screen: [example/screens/TargetScreen.tsx](example/screens/TargetScreen.tsx).
+
+### Boxing with hit effects
+
+`punch()` counts each punch and says which hand threw it. The effects come from the optional
+`/effects` entry (needs Skia and Reanimated).
+
+```tsx
+import { BodyVisionView, punch, useRepStats } from '@rbayuokt/expo-body-vision';
+import { ComboFever, ImpactEffect, useImpactShake } from '@rbayuokt/expo-body-vision/effects';
+import { Text } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+const RULES = [punch()];
+
+export function Boxing() {
+  const { stats, track } = useRepStats();
+  const shake = useImpactShake();
+  return (
+    <Animated.View style={[{ flex: 1 }, shake.style]}>
+      <BodyVisionView style={{ flex: 1 }} rules={RULES} smoothing="none" {...track}>
+        <ImpactEffect look="anime" onImpact={shake.shake} />
+        <ComboFever from={5} />
+        <Text style={{ color: 'white' }}>
+          Left {stats.left} · Right {stats.right} · Best combo x{stats.best}
+        </Text>
+      </BodyVisionView>
+    </Animated.View>
+  );
+}
+```
+
+Other looks: `lightning`, `fire`, `pixel`, `shatter` and `jojo`. Full screen:
+[example/screens/BoxingScreen.tsx](example/screens/BoxingScreen.tsx).
+
+### Unlock the fight after a setup
+
+Position, a T-pose to confirm, a measurement and a countdown, then punches start counting.
+`onSetupChange` hands you the step and the prompt text, so the UI is yours.
+
+```tsx
+import { BodyVisionView, punch, tPose, type SetupStep } from '@rbayuokt/expo-body-vision';
+import { useState } from 'react';
+import { Text } from 'react-native';
+
+const STEPS: SetupStep[] = [
+  'position',
+  { pose: tPose(), prompt: 'Arms out wide to confirm' },
+  'calibrate',
+  { countdown: 3 },
+];
+const RULES = [punch()];
+
+export function BoxingSetup() {
+  const [prompt, setPrompt] = useState('');
+  const [unlocked, setUnlocked] = useState(false);
+  return (
+    <BodyVisionView
+      style={{ flex: 1 }}
+      rules={RULES}
+      setup={{ steps: STEPS, startRules: 'afterSetup' }}
+      onSetupChange={(state, text) => setPrompt(text)}
+      onSetupComplete={() => setUnlocked(true)}>
+      <Text style={{ color: 'white', fontSize: 28 }}>{unlocked ? 'FIGHT!' : prompt}</Text>
+    </BodyVisionView>
+  );
+}
+```
+
+Call `restartSetup()` on the view's ref to run it again. Full screen:
+[example/screens/BoxingSetupScreen.tsx](example/screens/BoxingSetupScreen.tsx).
+
+### Guided setup with the built-in overlay
+
+Turn `setup` on and drop in `<BodySetup />` for a stand-here silhouette, prompts, arrows and a
+progress bar. `voice: true` reads the prompts out through expo-speech.
+
+```tsx
+import { BodyVisionView } from '@rbayuokt/expo-body-vision';
+import { BodySetup } from '@rbayuokt/expo-body-vision/setup';
+
+<BodyVisionView
+  style={{ flex: 1 }}
+  setup={{ framing: 'fullBody', voice: true }}
+  onSetupComplete={(calibration) => console.log(calibration?.torsoLength)}>
+  <BodySetup accentColor="#C6FF3D" />
+</BodyVisionView>;
+```
+
+Full screen: [example/screens/SetupScreen.tsx](example/screens/SetupScreen.tsx). For your own
+look instead of `<BodySetup />`, see
+[example/screens/CustomSetupScreen.tsx](example/screens/CustomSetupScreen.tsx) and
+[Your own look](#your-own-look).
+
+### Restyle the skeleton
+
+```tsx
+<BodyVisionView
+  style={{ flex: 1 }}
+  skeleton={{
+    boneColor: '#FFFFFF',
+    jointColor: '#30D158',
+    bones: { leftForearm: { color: '#FF6B4A' }, rightForearm: { color: '#3DD6FF' } },
+    trails: [{ joint: 'rightWrist', color: '#3DD6FF', lengthMs: 450 }],
+  }}
+/>
+```
+
+Full screen: [example/screens/SkeletonScreen.tsx](example/screens/SkeletonScreen.tsx).
+
+### Count reps in a recorded video
+
+No camera needed. The file runs through the same engine and you get the events back.
+
+```ts
+import { analyzeVideo, pushUp } from '@rbayuokt/expo-body-vision';
+
+const result = await analyzeVideo(videoUri, { rules: [pushUp()] });
+const reps = result.events.filter((e) => e.type === 'repCompleted').length;
+```
+
+To watch it with the skeleton instead, pass the file as `video` to the view. Full screen:
+[example/screens/VideoScreen.tsx](example/screens/VideoScreen.tsx).
+
+### Show live fps on screen
+
+`useBodyVisionStats` works in any child of the view and switches native stats on while mounted.
+
+```tsx
+import { BodyVisionView, useBodyVisionStats } from '@rbayuokt/expo-body-vision';
+import { Text } from 'react-native';
+
+function Fps() {
+  const stats = useBodyVisionStats();
+  if (!stats) return null;
+  return (
+    <Text style={{ color: 'white' }}>
+      {Math.round(stats.renderFps)} fps · {Math.round(stats.inferenceMs)} ms per pose
+    </Text>
+  );
+}
+
+<BodyVisionView style={{ flex: 1 }}>
+  <Fps />
+</BodyVisionView>;
+```
+
+The draggable badge in the example is
+[example/components/FloatingStats.tsx](example/components/FloatingStats.tsx).
+
+## Camera switch and flash
+
+Drop `<CameraControls />` inside the view for a flip button and a flash button. The flash
+button only shows on a camera that has a torch (on phones that's usually the back one), and
+nothing shows while a video or test input replaces the camera.
+
+```tsx
+<BodyVisionView style={{ flex: 1 }} rules={RULES}>
+  <CameraControls style={{ top: 100 }} />
+</BodyVisionView>
+```
+
+Change the look with `buttonStyle`, `color`, `activeColor`, `activeIconColor`, your own
+`icons={{ flip, torchOn, torchOff }}` and `labels` for accessibility. For your own buttons,
+`useCameraControls()` gives `{ facing, flip, torch, setTorch, hasTorch, available }`.
+
+`flip()` switches away from whatever `facing` says and turns the torch off. To drive the torch
+yourself, pass `torch` to the view. `onCameraReady` reports `hasTorch` for each camera start.
 
 ## How it works
 
@@ -356,6 +695,44 @@ The error codes are `CAMERA_PERMISSION_DENIED`, `CAMERA_UNAVAILABLE`, `CAMERA_IN
 
 The ref has `calibrate({ durationMs })`, `resetExercise(id?)` and `restartSetup()`.
 
+### Live performance numbers
+
+`useBodyVisionStats()` returns the view's performance about once a second: `renderFps`,
+`inferenceFps`, `inferenceMs`, `latencyMs`, `backend`, `delegate`, `thermalLevel` and more. Call it
+in any child of the view and it switches native stats on while mounted, so a debug overlay needs
+no `onStats` wiring. The example app shows a draggable FPS badge on every screen this way.
+
+```tsx
+function FpsBadge() {
+  const stats = useBodyVisionStats();
+  return <Text>{stats ? `${Math.round(stats.renderFps)} fps` : '-'}</Text>;
+}
+
+<BodyVisionView rules={[squat()]}>
+  <FpsBadge />
+</BodyVisionView>
+```
+
+### Counting stats
+
+Most workout and game screens show the same numbers. `useRepStats` keeps them so you don't write
+the combo timer yourself.
+
+```tsx
+import { BodyVisionView, punch, useRepStats } from '@rbayuokt/expo-body-vision';
+
+const { stats, track, reset } = useRepStats({ comboGapMs: 900 });
+
+<BodyVisionView rules={[punch()]} {...track} />
+<Text>{stats.count} punches, {stats.left} jabs, combo x{stats.combo}, best x{stats.best}</Text>
+```
+
+`stats` has `count`, `left` and `right` (peak exercises), `combo` and `best`, `streak` (counted
+reps since the last miss), `missed`, `lastMiss` and `lastRepAt`. `track` sets `onRep` and
+`onRepRejected`. To react to reps yourself as well, call `track.onRep(e)` from your own handler.
+`exercises` limits it to some exercise ids. `ComboFever` uses the same combo rule, so the fire
+and your counter always agree.
+
 ## Guided setup
 
 Most tracking problems come from framing, like feet out of view, standing too close or off to
@@ -433,11 +810,11 @@ work.
 natively and speaks if `voice` is on, and nothing is drawn that you didn't draw.
 
 ```tsx
-const [setupState, setSetupState] = useState<SetupState | null>(null);
+const [{ state: setupState, text }, setSetup] = useState({ state: null as SetupState | null, text: '' });
 
-<BodyVisionView setup={{ steps }} onSetupChange={setSetupState}>
+<BodyVisionView setup={{ steps }} onSetupChange={(state, text) => setSetup({ state, text })}>
   <MyStepper step={setupState?.step} count={setupState?.stepCount} />
-  <MyPrompt code={setupState?.prompt} text={setupState?.text} />
+  <MyPrompt text={text} />
   {setupState?.phase === 'calibrating' ? <MyListeningGlow /> : null}
   {setupState?.phase === 'countdown' ? <MyCountdown value={setupState.countdown} /> : null}
 </BodyVisionView>
@@ -447,8 +824,24 @@ Children can also read the same state with `useBodySetup()`. The state carries `
 (`positioning`, `holding`, `posing`, `calibrating`, `countdown`, `done`), the `prompt` code and
 any step `text`, `progress` from 0 to 1 for the current hold, measurement or countdown,
 `screenDirection` for arrows, `step` and `stepCount`, `countdown`, and the `calibration` result.
-The example's Custom setup screen is built this way, with a glowing edge while it measures and no
-library overlay at all.
+`onSetupChange` also passes the prompt `text` to show, already resolved from the step's own
+prompt, your `prompts` or the default. The example's Custom setup screen is built this way, with a
+glowing edge while it measures and no library overlay at all.
+
+**Count only after setup.** Give the view its rules up front and set `startRules: 'afterSetup'`.
+They stay off while the user walks into frame and turn on when setup is done, with the measured
+calibration already applied. `restartSetup()` pauses them again. No second view, no remount.
+
+```tsx
+<BodyVisionView
+  setup={{ steps, startRules: 'afterSetup' }}
+  rules={[punch()]}
+  onSetupComplete={() => playUnlockAnimation()}
+/>
+```
+
+The example's Boxing setup screen runs position, a T-pose, measuring and a countdown this way,
+then unlocks the fight.
 
 **Build your own flow.** Setup is made of public pieces, so you can wire them yourself with
 `readiness` and `onReadiness` for the position checks, pose rules, `ref.calibrate()` and your own
@@ -478,6 +871,11 @@ moving toward the screen's left is the user's left. `voice` speaks them through 
 `speak` takes your own text-to-speech. `<BodySetup />` draws with Skia and Reanimated, and the
 main entry never imports either library.
 
+For your own setup UI, `promptForReadiness(event)` turns an `onReadiness` event into the same
+prompt code the built-in setup uses. `createSpeaker({ language: 'id-ID' })` gives you a
+`{ speak, stop }` that cuts off whatever it was still saying, or null when expo-speech isn't
+installed, and `isSpeechAvailable()` checks that up front.
+
 ## Styling the skeleton
 
 The skeleton is drawn natively, and you style it with a plain object.
@@ -498,7 +896,8 @@ The skeleton is drawn natively, and you style it with a plain object.
 
 Style changes reconfigure the native renderer without restarting the camera or the model.
 `skeleton={false}` hides it. Bones and joints fade with confidence unless
-`fadeWithConfidence` is off.
+`fadeWithConfidence` is off. The names you can style are exported as `BONES` and `JOINTS`, and
+`isJointName` checks a string at runtime.
 
 ## Effects
 
@@ -569,8 +968,8 @@ target ids), `colors` (`{ left, right }` per side of the body), `words` (your ow
 `RepEffect` takes `look`, `exercises`, `every` (level up), `perfectAfter` (clean reps in a row
 before PERFECT!), `labels` (any of `good`, `perfect` and the rejection reasons, `''` to stay
 quiet), `levelLabel`, `colors`, `showCount`, `textStyle`, `size`, `durationMs` and `onPlay`.
-`ComboFever` takes `from`, `full`, `gapMs`, `exercises`, `color`, `banner`, `bannerStyle` and
-`onCombo`. `PoseAura` takes `poses`, `growMs` and `color`. `SetupConfetti` takes `colors`,
+`ComboFever` takes `from`, `full`, `gapMs`, `exercises`, `color`, `banner`, `bannerStyle`,
+`bannerTop` (to keep the banner below your header) and `onCombo`. `PoseAura` takes `poses`, `growMs` and `color`. `SetupConfetti` takes `colors`,
 `label`, `labelStyle`, `durationMs` and `trigger`.
 
 `useImpactShake()` returns `{ style, shake }`. Put `style` on an `Animated.View` around the view
@@ -699,11 +1098,39 @@ there's headroom. Under heavy thermal pressure it also halves effect particles.
 rate, mean inference time, render rate, 95th percentile frame interval, capture-to-display
 latency, dropped frames, backend, performance mode and thermal level.
 
-### Measured on real phones
+### Benchmarks
+
+Release builds of the example app on two real phones, side by side in the clip at the top of this README and read
+off its floating fps card while the screen was recording. Defaults throughout: `auto` mode, front
+camera, ML Kit on the OPPO and MediaPipe Lite on the iPhone.
+
+| Screen | Phone | Overlay | Poses per second | Time per pose | Capture to display |
+| --- | --- | --- | --- | --- | --- |
+| Body tracking | OPPO CPH2217 (Helio P90, 2019) | 59 to 60 fps | 8 to 9 | 63 to 91 ms | 133 to 164 ms |
+| Body tracking | iPhone 11 Pro | 60 fps | 15 | 20 to 22 ms | 121 to 134 ms |
+| Boxing with effects on | OPPO CPH2217 (Helio P90, 2019) | 56 to 62 fps | | | |
+| Boxing with effects on | iPhone 11 Pro | 52 to 61 fps | | | |
+
+Only the fps badge was showing during boxing, so there are no pose timings for it. The iPhone's
+52 came with the fire look and combo fever on screen at once.
+
+Time per pose for every backend, from earlier runs on the same phones:
 
 <p align="center">
   <img src="docs/benchmarks.png" alt="Time per pose in auto mode. On the iPhone 11 Pro, MediaPipe Lite took 26 ms and Apple Vision 25 ms. On the OPPO CPH2217, ML Kit took 60 ms, MediaPipe Lite 103 ms, MediaPipe Full 132 ms and MediaPipe Heavy 489 ms." width="100%" />
 </p>
+
+Conditions, every run and the GPU delegate results are in
+[Measured on real phones](#measured-on-real-phones) below.
+
+### Measured on real phones
+
+<p align="center">
+  <img src="docs/measured-runs.png" alt="Every measured run as paired bars. iPhone 11 Pro: MediaPipe Lite 26 ms per pose, 109 ms capture to display, 15 poses a second. Apple Vision 25 ms, 122 ms, 10 a second. OPPO CPH2217: MediaPipe Lite auto 103 ms, 173 ms, 9 a second. MediaPipe Full 132 ms, 216 ms, 8. MediaPipe Heavy 489 ms, 708 ms, 2. ML Kit auto 77 ms, 152 ms, 9. ML Kit balanced 67 ms, 117 ms, 15. MediaPipe Lite balanced 203 ms, 292 ms, 5." width="100%" />
+</p>
+
+The time-per-pose chart above comes from these runs too. The tables below add the conditions
+and the frame timings.
 
 **Heads up. Both phones were charging and warm during these runs, so a cool phone should do
 better. Accuracy between models hasn't been compared yet.**
@@ -862,17 +1289,24 @@ A few things behave differently per platform.
 - `experimentalDelegate="gpu"` runs MediaPipe on the GPU on Android, falling back to the CPU
   with a `GPU_UNAVAILABLE` error. On the phone measured it was faster per pose but made the
   overlay stutter, so it's off by default.
+- The torch only works on a camera with a flash unit, which on most phones means the back
+  camera. `hasTorch` says which, and `<CameraControls />` hides the button otherwise.
 - One body at a time. Web isn't supported.
 
 ## Example app
 
 `example/` has a screen per concept, covering body tracking, guided setup, a custom setup with
 its own UI and steps (T-pose to confirm, an edge glow while measuring, a countdown), rep
-counter, T-pose, target game, custom skeleton, boxing (punch counter with left and right, combos
-and every hit look), video analysis (live overlay preview, punch counting, a compare-all-models
+counter, T-pose, target game, custom skeleton, boxing setup (position, T-pose, measure, then an
+unlock into the fight), boxing (punch counter with left and right, combos and every hit look),
+video analysis (live overlay preview, punch counting, a compare-all-models
 button), a JS-freeze demo (blocks the JS thread for four seconds while tracking and counting
 continue), performance with a model picker, and a mount/unmount lifecycle loop. A switch on the
 home screen swaps the live camera for recorded input.
+
+Every camera screen has the flip and flash buttons from `<CameraControls />` and a draggable
+fps badge built on `useBodyVisionStats`. Tap the badge for poses per second, time per pose,
+latency and the model in use.
 
 ```bash
 cd example
@@ -885,8 +1319,9 @@ npm run ios       # or: npm run android
 How the repository is laid out, for anyone working on the library itself.
 
 ```text
-src/                   TS API: BodyVisionView, analyzeVideo, rule and preset builders, types
+src/                   TS API: BodyVisionView, CameraControls, hooks, analyzeVideo, rules, types
 src/setup/             setup session, prompts, speech; BodySetup.tsx is the /setup entry
+src/effects/           Skia and Reanimated effects, the /effects entry
 ios/Core/              engine in Swift, Foundation only
 android/.../core/      the same engine in Kotlin, plain JVM
 ios/*.swift            camera, video, backends, replay, pipeline, CAShapeLayer overlay, view
@@ -906,7 +1341,7 @@ lock only for bookkeeping, never while running the model or drawing.
 | `npm run build` | TypeScript build into `build/` |
 | `npm run lint` | ESLint on `src/` |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run test:unit` | Jest: rule builders, presets, setup session, model resolution |
+| `npm run test:unit` | Jest: rule builders, presets, setup session, rep stats, model resolution, effect shaders |
 | `npm run test:ios` | Swift engine tests on macOS with xctest, no simulator |
 | `npm run test:android` | Kotlin engine tests on the JVM, no emulator |
 | `npm run test:core` | Both engine suites |

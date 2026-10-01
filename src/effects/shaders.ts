@@ -341,6 +341,8 @@ uniform float time;
 uniform float intensity;
 uniform float3 tint;
 uniform float seed;
+// Where drawing starts. Cheaper levels draw only the lower part, so fade in below it.
+uniform float top;
 ${HASH}
 half4 main(float2 p) {
   float fromBottom = size.y - p.y;
@@ -354,7 +356,7 @@ half4 main(float2 p) {
   float fromEdges = min(fromBottom / height, side / (24.0 + 60.0 * intensity));
   float body = clamp(1.0 - fromEdges, 0.0, 1.0);
   body = body * body;
-  float a = clamp((body * 0.45 + s * body) * intensity, 0.0, 1.0);
+  float a = clamp((body * 0.45 + s * body) * intensity, 0.0, 1.0) * smoothstep(top, top + 140.0, p.y);
   float3 c = mix(tint, float3(1.0), s * body * 0.6);
   return half4(half3(c * a), half(a));
 }

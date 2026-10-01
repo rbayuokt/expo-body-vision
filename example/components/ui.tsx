@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View, type ViewStyle } from 'react-native';
+import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 
 import { color, space, type } from '../theme';
 
@@ -56,7 +57,15 @@ export function PrimaryButton({
   );
 }
 
-export function GhostButton({ label, onPress, testID }: { label: string; onPress: () => void; testID?: string }) {
+export function GhostButton({
+  label,
+  onPress,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  testID?: string;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -94,7 +103,9 @@ export function Choice<T extends string>({
             accessibilityState={{ selected }}
             testID={testIDPrefix ? `${testIDPrefix}-${o}` : undefined}
             style={[styles.choiceItem, selected && styles.choiceSelected]}>
-            <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{labels?.[o] ?? o}</Text>
+            <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>
+              {labels?.[o] ?? o}
+            </Text>
           </Pressable>
         );
       })}
@@ -102,7 +113,76 @@ export function Choice<T extends string>({
   );
 }
 
-export function SwitchRow({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+/** One connected bar for a single choice on a scale. */
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+  testIDPrefix,
+}: {
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  testIDPrefix: string;
+}) {
+  return (
+    <View style={styles.segmented} accessibilityRole="radiogroup">
+      {options.map((o) => {
+        const selected = o.id === value;
+        return (
+          <Pressable
+            key={o.id}
+            onPress={() => onChange(o.id)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            testID={`${testIDPrefix}-${o.id}`}
+            style={[styles.segment, selected && styles.segmentSelected]}>
+            <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** One column of the scoreboard. Every column is the same width and size, centered. */
+export function Stat({
+  value,
+  label,
+  tint,
+  animated,
+  testID,
+}: {
+  value: string | number;
+  label: string;
+  tint: string;
+  animated?: AnimatedStyle<ViewStyle>;
+  testID?: string;
+}) {
+  return (
+    <View style={styles.stat}>
+      <Animated.Text
+        style={[styles.statValue, { color: tint }, animated]}
+        numberOfLines={1}
+        testID={testID}>
+        {value}
+      </Animated.Text>
+      <Label>{label}</Label>
+    </View>
+  );
+}
+
+export function SwitchRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <View style={styles.row}>
       <Text style={styles.rowText}>{label}</Text>
@@ -117,7 +197,17 @@ export function SwitchRow({ label, value, onChange }: { label: string; value: bo
   );
 }
 
-export function Readout({ label, value, tint = color.text, testID }: { label: string; value: string; tint?: string; testID?: string }) {
+export function Readout({
+  label,
+  value,
+  tint = color.text,
+  testID,
+}: {
+  label: string;
+  value: string;
+  tint?: string;
+  testID?: string;
+}) {
   return (
     <View style={styles.readout}>
       <Label>{label}</Label>
@@ -128,7 +218,15 @@ export function Readout({ label, value, tint = color.text, testID }: { label: st
   );
 }
 
-export function Chip({ text, tint = color.lime, style }: { text: string; tint?: string; style?: ViewStyle }) {
+export function Chip({
+  text,
+  tint = color.lime,
+  style,
+}: {
+  text: string;
+  tint?: string;
+  style?: ViewStyle;
+}) {
   return (
     <View style={[styles.chip, { borderColor: tint }, style]}>
       <Text style={[type.label, { color: tint, fontSize: 10 }]}>{text}</Text>
@@ -170,9 +268,29 @@ const styles = StyleSheet.create({
   choiceSelected: { backgroundColor: color.lime, borderColor: color.lime },
   choiceText: { color: color.text, fontSize: 13, fontWeight: '600' },
   choiceTextSelected: { color: color.limeInk },
+  stat: { flex: 1, alignItems: 'center', gap: 4 },
+  statValue: { fontSize: 26, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  segmented: {
+    flexDirection: 'row',
+    padding: 3,
+    borderRadius: 12,
+    backgroundColor: color.raised,
+    borderWidth: 1,
+    borderColor: color.hairline,
+  },
+  segment: { flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center' },
+  segmentSelected: { backgroundColor: color.lime },
+  segmentText: { color: color.muted, fontSize: 13, fontWeight: '700' },
+  segmentTextSelected: { color: color.limeInk },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowText: { color: color.text, fontSize: 15, fontWeight: '500' },
   readout: { flex: 1, gap: 4, minWidth: 90 },
   readoutValue: { fontSize: 20, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    alignSelf: 'flex-start',
+  },
 });

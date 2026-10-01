@@ -226,7 +226,7 @@ internal class FrameBitmap {
 
 /**
  * ML Kit Pose in stream mode: BlazePose too, same 33 joints and order. The Android default,
- * measured faster than MediaPipe Lite on a CPH2217 (67-77 ms vs 103-203 ms). Reports upright
+ * measured faster than MediaPipe Lite on a CPH2217. Reports upright
  * coordinates, so the pipeline doesn't rotate them.
  */
 internal class MlKitPoseBackend : BodyVisionPoseBackend {

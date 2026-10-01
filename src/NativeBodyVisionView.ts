@@ -47,6 +47,7 @@ export interface NativeTelemetry {
 export interface NativeBodyVisionProps {
   ref?: Ref<NativeBodyVisionRef>;
   facing: CameraFacing;
+  torch: boolean;
   active: boolean;
   resizeMode: ResizeMode;
   config: NativeEngineConfig;

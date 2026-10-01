@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/expo-body-vision.png" alt="@rbayuokt/expo-body-vision, body tracking for React Native and Expo. A cat in a yellow martial arts suit throws a punch with a tracked skeleton drawn over it, labelled pose detected and good form." width="100%" />
+</p>
+
 # expo-body-vision
 
 <p align="center">
@@ -19,8 +23,10 @@ counting. [How it works](#how-it-works) shows the full path.
 
 Use it to count push-ups, squats and punches, react when someone holds a T-pose or raises both
 hands, build games where players hit targets with their hands, walk users into frame before a
-workout, or count reps in a video they recorded earlier. [Examples](#examples) has a short recipe
-for each.
+workout, or count reps in a video they recorded earlier. None of it is fixed. The presets take
+your own thresholds, hold times and rep speed limits, targets take any size, place and joint, and
+you can write your own exercises and poses from scratch, like jumping jacks, a yoga hold or a
+side plank. [Examples](#examples) has a short recipe for each.
 
 Almost every part can be swapped or extended:
 
@@ -1199,8 +1205,20 @@ trained.
 <BodyVisionView backend="mediapipe" model={require('./assets/pose_landmarker_heavy.task')} />
 ```
 
-Add `task` to Metro's `assetExts`. The file is copied out of the bundle with expo-asset before
-loading, and inference pauses until it's ready. `{ uri }` takes a file on disk.
+Metro has to know `.task` files are assets, so add one line to `metro.config.js`:
+
+```js
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+config.resolver.assetExts.push('task');
+
+module.exports = config;
+```
+
+The file is copied out of the bundle with expo-asset before loading, and inference pauses until
+it's ready. To load a file that's already on the device, for example one your app downloaded,
+pass `model={{ uri: 'file:///path/to/model.task' }}` instead.
 
 ### Your own native backend
 
